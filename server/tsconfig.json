@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true
+  }
+}
+
+
+// Explanation
+// tsconfig.json tells TypeScript how to behave when compiling your code.
+// target → JS version output
+// module → CommonJS (Node default)
+// rootDir → where TS files live
+// outDir → where compiled JS goes
+// strict → enables strong type checking
+// esModuleInterop → allows import express from "express"
