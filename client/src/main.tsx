@@ -12,6 +12,11 @@ import App from './App.tsx'
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
+import { getStoredTheme, setTheme } from './theme';
+
+// Apply theme BEFORE React renders
+setTheme(getStoredTheme());
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

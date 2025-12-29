@@ -5,17 +5,26 @@ import './App.css'
 import HeaderNav from './components/Header';
 import { Route, Routes } from 'react-router-dom';
 import UnderConstruction from './components/UnderConstruction';
+import Landing from './pages/Landing';
+import Verify from './pages/Verify';
+import VerifyOTP from './pages/VerifyOTP';
+import LastSetup from './pages/LastSetup';
+import SendEmail from './pages/SendEmail';
 
 
 function App() {
 
   return (
-    <div className="bg-dark">
+    <div className="">
       <HeaderNav onLogout={() => alert("logout")}/>
       {/* Route Definitions */}
       <Routes>
-        <Route path="/" element={<UnderConstruction />} />
-        <Route path="/about" element={<UnderConstruction />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/guide" element={<UnderConstruction />} />
+        <Route path="/verify" element={<Verify />} />
+        <Route path="/verify/otp" element={<VerifyOTP />} />
+        <Route path="/verify/otp/app-password" element={<LastSetup />} />
+        <Route path="/send-email" element={<SendEmail />} />
 
         {/* 404 page */}
         <Route path="*" element={<UnderConstruction />} />
