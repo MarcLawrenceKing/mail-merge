@@ -1,7 +1,63 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DataTable from "../components/DataTable";
+import ReusableModal from "../components/CustomModal";
+
+
+type Recipient = {
+  email: string;
+  name: string;
+  company: string;
+};
+
+const columns = [
+  { key: "email", label: "Email" },
+  { key: "name", label: "Name" },
+  { key: "company", label: "Company" },
+];
+
+const data: Recipient[] = [
+  {
+    email: "john@example.com",
+    name: "John Doe",
+    company: "ABC Corp",
+  },
+  {
+    email: "john@example.com",
+    name: "John Doe",
+    company: "ABC Corp",
+  },  {
+    email: "john@example.com",
+    name: "John Doe",
+    company: "ABC Corp",
+  },
+    {
+    email: "john@example.com",
+    name: "John Doe",
+    company: "ABC Corp",
+  },
+    {
+    email: "john@example.com",
+    name: "John Doe",
+    company: "ABC Corp",
+  },
+  {
+    email: "jane@example.com",
+    name: "Jane Smith",
+    company: "XYZ Ltd",
+  },
+];
 const SendEmail = () => {
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleGoToSummary = () => {
+    // Navigate to a specific route
+    navigate('/send-email/summary');
+  
+  };
   return (
     <div className="container py-5">
 
@@ -143,113 +199,38 @@ const SendEmail = () => {
           Recipients
         </div>
 
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-striped mb-0">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Email</th>
-                  <th>Name</th>
-                  <th>Company</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Placeholder rows */}
-                <tr>
-                  <td>1</td>
-                  <td>john@example.com</td>
-                  <td>John Doe</td>
-                  <td>ABC Corp</td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>jane@example.com</td>
-                  <td>Jane Smith</td>
-                  <td>XYZ Ltd</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Pagination */}
-        <div className="card-footer">
-          <nav>
-            <ul className="pagination pagination-sm mb-0">
-              <li className="page-item disabled">
-                <span className="page-link">Previous</span>
-              </li>
-              <li className="page-item active">
-                <span className="page-link">1</span>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">2</a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">Next</a>
-              </li>
-            </ul>
-          </nav>
-        </div>
+        <DataTable
+          columns={columns}
+          data={data}
+          showIndex
+          pageSize={5}
+        />
       </div>
 
       {/* ================= MODALS ================= */}
 
       {/* Send Confirmation */}
-      <div
-        className="modal fade"
+      <ReusableModal
         id="sendConfirmModal"
-        tabIndex={-1}
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Confirm Send</h5>
-              <button className="btn-close" data-bs-dismiss="modal" />
-            </div>
-            <div className="modal-body">
-              Are you sure you want to send emails to all recipients?
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">
-                Cancel
-              </button>
-              <button className="btn btn-primary">
-                Confirm Send
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+        title="Confirm Send"
+        body="Are you sure you want to send emails to all recipients?"
+        primaryButtonName="Confirm Send"
+        onPrimaryClick={() => {
+          console.log("Sending emails...");
+          navigate("/send-email/summary")
+        }}
+      />
 
       {/* Test Send Confirmation */}
-      <div
-        className="modal fade"
+      <ReusableModal
         id="testSendModal"
-        tabIndex={-1}
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Test Send</h5>
-              <button className="btn-close" data-bs-dismiss="modal" />
-            </div>
-            <div className="modal-body">
-              A test email will be sent to your email address.
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">
-                Cancel
-              </button>
-              <button className="btn btn-outline-primary">
-                Send Test
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+        title="Test Send"
+        body="A test email will be sent to your email address."
+        primaryButtonName="Send Test"
+        onPrimaryClick={() => {
+          alert("Check your email");
+        }}
+      />
     </div>
   );
 };

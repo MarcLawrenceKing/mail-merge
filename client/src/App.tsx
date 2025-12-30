@@ -10,6 +10,7 @@ import Verify from './pages/Verify';
 import VerifyOTP from './pages/VerifyOTP';
 import LastSetup from './pages/LastSetup';
 import SendEmail from './pages/SendEmail';
+import SendSummary from './pages/SendSummary';
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/verify/otp" element={<VerifyOTP />} />
         <Route path="/verify/otp/app-password" element={<LastSetup />} />
         <Route path="/send-email" element={<SendEmail />} />
+        <Route path="/send-email/summary" element={<SendSummary />} />
 
         {/* 404 page */}
         <Route path="*" element={<UnderConstruction />} />

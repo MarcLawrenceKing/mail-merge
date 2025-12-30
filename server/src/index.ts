@@ -1,10 +1,11 @@
-import express, { Request, Response } from "express";
+import dotenv from "dotenv";
+dotenv.config(); // load .env into process.env
 
-const app = express();
-const PORT = 3000;
+import { Request, Response } from "express";
 
-// middleware to parse JSON body
-app.use(express.json());
+import app from "./app";
+
+const PORT = process.env.PORT || 3000;
 
 // test route
 app.get("/", (req: Request, res: Response) => {
@@ -13,7 +14,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-// start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
