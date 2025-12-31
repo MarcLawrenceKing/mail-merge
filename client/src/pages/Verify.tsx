@@ -1,15 +1,30 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { sendOtp } from "../api/auth";
+
+
 const Verify = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
 
-  const handleSendOtp = () => {
-    // placeholder – no backend yet
-    console.log("Send OTP to:", email);
-    alert(`OTP would be sent to ${email}`);
-    navigate('/verify/otp')
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      await sendOtp(email);
+      setMessage("OTP sent to your email");
+      navigate('/verify/otp')
+    } catch {
+      setMessage("Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,17 +51,18 @@ const Verify = () => {
             placeholder="youremail@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </div>
 
         <button
           className="btn btn-primary w-100"
           onClick={handleSendOtp}
-          disabled={!email}
+          disabled={!email || loading}
         >
-          Send OTP
+          {loading ? "Sending..." : "Send OTP"}
         </button>
-
+        {message && <p>{message}</p>}
       </div>
     </div>
   );
