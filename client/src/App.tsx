@@ -11,26 +11,29 @@ import VerifyOTP from './pages/VerifyOTP';
 import LastSetup from './pages/LastSetup';
 import SendEmail from './pages/SendEmail';
 import SendSummary from './pages/SendSummary';
+import { ToastProvider } from './context/ToastContext';
 
 
 function App() {
 
   return (
     <div className="">
-      <HeaderNav onLogout={() => alert("logout")}/>
-      {/* Route Definitions */}
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/guide" element={<UnderConstruction />} />
-        <Route path="/verify" element={<Verify />} />
-        <Route path="/verify/otp" element={<VerifyOTP />} />
-        <Route path="/verify/otp/app-password" element={<LastSetup />} />
-        <Route path="/send-email" element={<SendEmail />} />
-        <Route path="/send-email/summary" element={<SendSummary />} />
+      <ToastProvider>
+        <HeaderNav onLogout={() => alert("logout")}/>
+        {/* Route Definitions */}
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/guide" element={<UnderConstruction />} />
+          <Route path="/verify" element={<Verify />} />
+          <Route path="/verify/otp" element={<VerifyOTP />} />
+          <Route path="/verify/otp/app-password" element={<LastSetup />} />
+          <Route path="/send-email" element={<SendEmail />} />
+          <Route path="/send-email/summary" element={<SendSummary />} />
 
-        {/* 404 page */}
-        <Route path="*" element={<UnderConstruction />} />
-      </Routes>
+          {/* 404 page */}
+          <Route path="*" element={<UnderConstruction />} />
+        </Routes>
+      </ToastProvider>
     </div>
   )
 }

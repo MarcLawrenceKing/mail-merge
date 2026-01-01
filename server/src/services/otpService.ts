@@ -17,9 +17,9 @@ export const generateAndStoreOtp = async (email: string) => {
       {
         email,
         otp_hash: otpHash,
-        otp_expires_at: new Date(Date.now() + 5 * 60 * 1000),
+        expires_at: new Date(Date.now() + 5 * 60 * 1000),
         attempts: 0,
-        last_otp_sent_at: new Date(),
+        last_login_attempt: new Date(),
       },
       { onConflict: "email" }
     );

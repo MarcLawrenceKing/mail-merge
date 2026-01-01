@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { sendOtp } from "../api/auth";
+import { useToast } from "../context/ToastContext";
+
 
 
 const Verify = () => {
@@ -9,19 +11,20 @@ const Verify = () => {
   const [email, setEmail] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+
+  const { showToast } = useToast();
+
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
       await sendOtp(email);
-      setMessage("OTP sent to your email");
+      showToast("OTP sent to your email", "success");
       navigate('/verify/otp')
-    } catch {
-      setMessage("Failed to send OTP");
+    } catch (err: any) {
+      showToast(err.message || "Unable to send OTP", "danger");
     } finally {
       setLoading(false);
     }
@@ -62,7 +65,6 @@ const Verify = () => {
         >
           {loading ? "Sending..." : "Send OTP"}
         </button>
-        {message && <p>{message}</p>}
       </div>
     </div>
   );

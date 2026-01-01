@@ -8,7 +8,8 @@ export const sendOtp = async (email: string) => {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to send OTP");
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.message || "Failed to send OTP");
   }
 
   return res.json();
