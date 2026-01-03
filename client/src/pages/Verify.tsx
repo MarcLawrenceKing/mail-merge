@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { sendOtp } from "../api/auth";
 import { useToast } from "../context/ToastContext";
+import { setVerifyEmail } from "../utils/authStorage";
 
 
 
@@ -20,9 +21,16 @@ const Verify = () => {
     setLoading(true);
 
     try {
-      await sendOtp(email);
+      // helper function
+      await sendOtp(email); 
+
+      // helper function to save email in sessionStorage
+      setVerifyEmail(email); 
+
       showToast("OTP sent to your email", "success");
+
       navigate('/verify/otp')
+
     } catch (err: any) {
       showToast(err.message || "Unable to send OTP", "danger");
     } finally {

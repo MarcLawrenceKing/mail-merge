@@ -1,16 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
+import { clearVerifyEmail, getVerifyEmail } from "../utils/authStorage";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
 
-  const handleSubmit = () => {
-    // placeholder – no backend yet
-    console.log("Send OTP to:", email);
-    alert(`OTP would be sent to ${email}`);
+  const email = getVerifyEmail();
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { showToast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+
+    // After successful verification, remove email from sessionStorage:
+    clearVerifyEmail(); //  cleanup
     navigate('/verify/otp/app-password')
   };
+
+  useEffect(() => {
+    if (!email) {
+      // show toast here
+      showToast("Invalid access. Please enter your email first.", "danger");
+      // replace:true so that user cannot go "back" to the VerifyOTP page w/out an email
+      navigate("/verify", { replace: true });
+    }
+  }, [email, navigate]);
 
   return (
     <div className="container min-vh-100 d-flex align-items-center justify-content-center">
@@ -25,25 +44,25 @@ const VerifyOTP = () => {
         </p>
 
         <div className="mb-3">
-          <label htmlFor="email" className="form-label">
+          <label htmlFor="otp" className="form-label">
             OTP
           </label>
           <input
-            id="email"
-            type="email"
+            id="otp"
+            type="text"
             className="form-control"
             placeholder="e.g. 123456"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
           />
         </div>
 
         <button
           className="btn btn-primary w-100"
           onClick={handleSubmit}
-          disabled={!email}
+          disabled={!otp || loading}
         >
-          Submit
+          {loading ? "Sending..." : "Submit"}
         </button>
 
       </div>
