@@ -12,14 +12,42 @@ const VerifyOTP = () => {
 
   const { showToast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+  try {
+    const res = await fetch("/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
 
-    // After successful verification, remove email from sessionStorage:
-    clearVerifyEmail(); //  cleanup
-    navigate('/verify/otp/app-password')
+    // this is response from backend (success or failed)
+    const data = await res.json();
+
+    if (!res.ok) {
+      showToast(data.message || "OTP verification failed", "danger");
+
+      // backend flag when user has too many wrong attempts
+      if (data.locked) {
+        clearVerifyEmail();
+        sessionStorage.clear();
+        navigate("/verify", { replace: true });
+      }
+
+      return;
+    }
+
+    // if OTP is correct, create otp_token
+    sessionStorage.setItem("otp_token", data.token);
+    navigate("/verify/otp/app-password");
+
+  } catch {
+    showToast("Server error. Please try again.", "danger");
+  } finally {
+    setLoading(false);
+  }
   };
 
   useEffect(() => {

@@ -1,10 +1,14 @@
 import { Router } from "express";
-import { generateAndStoreOtp } from "../services/otpService";
+import { generateAndStoreOtp, verifyOtp } from "../services/otpService";
 import { sendOtpEmail } from "../services/emailService";
+import { supabase } from "../config/supabase";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
 
 const router = Router();
 
-// this route "/send-otp"
+// this route "/api/auth/send-otp"
 // - reads the email from request body
 // - checks if email was extracted, if not, error toast
 // - checks email format via regex, if wrong structure, error toast
@@ -39,6 +43,32 @@ router.post("/send-otp", async (req, res) => {
     }
 
     res.status(500).json({ message: "Failed to send OTP" });
+  }
+});
+
+// this route "/api/auth/verify-otp"
+// - extracts email and otp from the request body
+// - returns error when there is no email or OTP
+// - calls the verifyOtp helper function
+// - returns the result, if there is error catched, print it
+router.post("/verify-otp", async (req, res) => {
+  try {
+    // get the email and otp from VerifyOTP page
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required." });
+    }
+
+    const result = await verifyOtp(email, otp);
+
+    return res.json(result);
+
+  } catch (err: any) {
+    return res.status(err.status || 500).json({
+      message: err.message || "Server error",
+      ...err.meta,
+    });
   }
 });
 

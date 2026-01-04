@@ -1,8 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
+import { clearVerifyEmail } from "../utils/authStorage";
 
 const LastSetup = () => {
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("otp_token");
+  const { showToast } = useToast();
 
+
+  useEffect(() => {
+    // cleanup email verification in the sessionStorage
+    clearVerifyEmail();
+
+    // check if session token exists
+    if (!token) {
+      showToast("Invalid access. Please verify your email first.", "danger");
+      navigate("/verify", { replace: true });
+    }
+  }, []);
+  
   const handleAppPassword = () => {
     // placeholder action
     alert("App Password flow will be handled here");
