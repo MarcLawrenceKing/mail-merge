@@ -93,7 +93,6 @@ export const verifyOtp = async (email: string, otp: string) => {
     throw {
       status: 403,
       message: "Too many failed attempts. Please request a new OTP.",
-      meta: { locked: true },
     };
   }
 

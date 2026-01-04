@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
-import { clearVerifyEmail, getVerifyEmail } from "../utils/authStorage";
+import { getVerifyEmail } from "../utils/authStorage";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -16,38 +16,30 @@ const VerifyOTP = () => {
     e.preventDefault();
     setLoading(true);
 
-  try {
-    const res = await fetch("/api/auth/verify-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp }),
-    });
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
 
-    // this is response from backend (success or failed)
-    const data = await res.json();
+      // this is response from backend (success or failed)
+      const data = await res.json();
 
-    if (!res.ok) {
-      showToast(data.message || "OTP verification failed", "danger");
-
-      // backend flag when user has too many wrong attempts
-      if (data.locked) {
-        clearVerifyEmail();
-        sessionStorage.clear();
-        navigate("/verify", { replace: true });
+      if (!res.ok) {
+        showToast(data.message || "OTP verification failed", "danger");
+        return;
       }
 
-      return;
+      // if OTP is correct, create otp_token
+      sessionStorage.setItem("otp_token", data.token);
+      navigate("/verify/otp/app-password");
+
+    } catch {
+      showToast("Server error. Please try again.", "danger");
+    } finally {
+      setLoading(false);
     }
-
-    // if OTP is correct, create otp_token
-    sessionStorage.setItem("otp_token", data.token);
-    navigate("/verify/otp/app-password");
-
-  } catch {
-    showToast("Server error. Please try again.", "danger");
-  } finally {
-    setLoading(false);
-  }
   };
 
   useEffect(() => {
