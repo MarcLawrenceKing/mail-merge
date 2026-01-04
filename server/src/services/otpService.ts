@@ -65,7 +65,7 @@ export const generateAndStoreOtp = async (email: string) => {
 // This function
 // - fetch user to check its OTP by its email
 // - handles email error (when DB did not return any email)
-// - checks DB if attempts >= 3 before proceeding, set a metadata locked:true if it is true
+// - checks DB if attempts >= 3 before proceeding
 // - checks if OTP is expired or NULL
 // - compares user input with DB value
 // -- if matched, update db values otp_hash, expires_at to NULL, attempts to 0, last_login_attempt to current date, and last_login to current date.
