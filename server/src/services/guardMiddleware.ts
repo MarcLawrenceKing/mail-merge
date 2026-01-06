@@ -17,6 +17,7 @@ export const requireOtpVerified = (
 
   try {
     jwt.verify(token, process.env.JWT_SECRET as string);
+    console.log("Verified!")
     next();
   } catch {
     return res.sendStatus(403);
