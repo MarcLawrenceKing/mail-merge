@@ -1,8 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
+export interface OtpJwtPayload {
+  email: string;
+  otpVerified: boolean;
+  iat: number;
+  exp: number;
+}
 
-// this will guard a function so that only OTP verified users can access the system
+// this function verifies the OTP whether it is valid or expired
+
+// - reads the authHeader and token
+// - return if authentication token is invalid or null
+// - decode the jwt using JWT_SECRET and return error if OTP 
+
 export const requireOtpVerified = (
   req: Request,
   res: Response,
@@ -10,16 +21,39 @@ export const requireOtpVerified = (
 ) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) return res.sendStatus(401);
+  if (!authHeader) {
+    return res.status(401).json({
+      message: "Missing authentication token.",
+    });
+  }
 
   const token = authHeader.split(" ")[1];
-  if (!token) return res.sendStatus(401);
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Invalid authentication token.",
+    });
+  }
 
   try {
-    jwt.verify(token, process.env.JWT_SECRET as string);
-    console.log("Verified!")
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as OtpJwtPayload;
+
+    if (!decoded.otpVerified) {
+      return res.status(403).json({
+        message: "OTP verification required.",
+      });
+    }
+
+    // optional: attach user details (like email) to request
+    // (req as any).user = decoded;
+
     next();
-  } catch {
-    return res.sendStatus(403);
+  } catch (err) {
+    return res.status(403).json({
+      message: "Session expired or invalid. Please verify OTP again.",
+    });
   }
 };

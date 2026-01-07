@@ -4,6 +4,7 @@ import { sendOtpEmail } from "../services/emailService";
 import { supabase } from "../config/supabase";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { requireOtpVerified } from "../services/guardMiddleware";
 
 
 const router = Router();
@@ -70,6 +71,12 @@ router.post("/verify-otp", async (req, res) => {
       ...err.meta,
     });
   }
+});
+
+// this route "/api/auth/otp-guard-check"
+// - checks the jwt in the backend to be used in the frontend
+router.get("/otp-guard-check", requireOtpVerified, (req, res) => {
+  res.json({ ok: true });
 });
 
 export default router;
