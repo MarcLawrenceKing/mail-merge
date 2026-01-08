@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "../components/DataTable";
 import ReusableModal from "../components/CustomModal";
+import { useOtpGuard } from "../hooks/useOtpGuard";
 
 
 type Recipient = {
@@ -48,6 +49,8 @@ const data: Recipient[] = [
   },
 ];
 const SendEmail = () => {
+
+  useOtpGuard();
 
   const [showPassword, setShowPassword] = useState(false);
 
