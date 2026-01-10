@@ -6,6 +6,7 @@ type ReusableModalProps = {
   body: React.ReactNode;
   primaryButtonName: string;
   onPrimaryClick: () => void;
+  primaryButtonDisabled?: boolean;
 };
 
 const ReusableModal: React.FC<ReusableModalProps> = ({
@@ -14,6 +15,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
   body,
   primaryButtonName,
   onPrimaryClick,
+  primaryButtonDisabled = false,
 }) => {
   return (
     <div className="modal fade" id={id} tabIndex={-1}>
@@ -23,7 +25,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
           {/* HEADER */}
           <div className="modal-header">
             <h5 className="modal-title">{title}</h5>
-            <button className="btn-close" data-bs-dismiss="modal" />
+            <button className="btn-close" data-bs-dismiss="modal" disabled={primaryButtonDisabled} />
           </div>
 
           {/* BODY */}
@@ -31,15 +33,18 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
 
           {/* FOOTER */}
           <div className="modal-footer">
-            <button className="btn btn-secondary" data-bs-dismiss="modal">
+            <button className="btn btn-secondary" data-bs-dismiss="modal" disabled={primaryButtonDisabled}>
               Cancel
             </button>
             <button
               className="btn btn-primary"
               onClick={onPrimaryClick}
-              data-bs-dismiss="modal"
+              data-bs-dismiss={
+                primaryButtonDisabled ? undefined : "modal"
+              }
+              disabled={primaryButtonDisabled}
             >
-              {primaryButtonName}
+               {primaryButtonName}
             </button>
           </div>
 

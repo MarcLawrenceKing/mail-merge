@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { generateAndStoreOtp, verifyOtp } from "../services/otpService";
 import { sendOtpEmail } from "../services/emailService";
-import { supabase } from "../config/supabase";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { requireOtpVerified } from "../services/guardMiddleware";
 
 

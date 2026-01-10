@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import DataTable from "../components/DataTable";
 import ReusableModal from "../components/CustomModal";
 import { useOtpGuard } from "../hooks/useOtpGuard";
+import { getEmailFromOtpToken } from "../utils/jwt";
+import { sendTestEmail } from "../api/email";
+import { useToast } from "../context/ToastContext";
 
 
 type Recipient = {
@@ -51,16 +54,42 @@ const data: Recipient[] = [
 const SendEmail = () => {
 
   useOtpGuard();
+  const { showToast } = useToast();
+  const [appPassword, setAppPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleGoToSummary = () => {
-    // Navigate to a specific route
-    navigate('/send-email/summary');
-  
+  // FROM email display, also used in test send
+  const fromEmail = getEmailFromOtpToken(); // from JWT email
+  // for test send only
+  const toEmail = getEmailFromOtpToken(); // from JWT email
+
+  // handles test send after confirming modal
+  const handleTestSend = async () => {
+
+    if (!fromEmail) {
+      showToast("Session expired. Please verify OTP again.", "danger");
+      return;
+    }
+
+    if (!appPassword) {
+      showToast("Please enter your Google App Password.", "danger");
+      return;
+    }
+    try {
+      setLoading(true);
+      await sendTestEmail(fromEmail, appPassword, toEmail);
+      showToast("Test email sent successfully!", "success");
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div className="container py-5">
 
@@ -81,7 +110,7 @@ const SendEmail = () => {
                 className="form-control"
                 id="fromEmail"
                 placeholder="From"
-                value="user@gmail.com"
+                value={fromEmail}
                 disabled
                 />
                 <label htmlFor="fromEmail">From</label>
@@ -99,6 +128,8 @@ const SendEmail = () => {
                   className="form-control"
                   id="appPassword"
                   placeholder="Enter Google App Password"
+                  value={appPassword}
+                  onChange={(e) => setAppPassword(e.target.value)}
                 />
                 <label htmlFor="appPassword">App Password</label>
               </div>
@@ -230,9 +261,8 @@ const SendEmail = () => {
         title="Test Send"
         body="A test email will be sent to your email address."
         primaryButtonName="Send Test"
-        onPrimaryClick={() => {
-          alert("Check your email");
-        }}
+        primaryButtonDisabled={loading}
+        onPrimaryClick={handleTestSend}
       />
     </div>
   );
