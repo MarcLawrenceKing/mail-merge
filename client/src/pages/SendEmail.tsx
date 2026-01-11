@@ -6,51 +6,16 @@ import { useOtpGuard } from "../hooks/useOtpGuard";
 import { getEmailFromOtpToken } from "../utils/jwt";
 import { sendTestEmail } from "../api/email";
 import { useToast } from "../context/ToastContext";
+import { importFile } from "../api/file_import";
+import { buildColumnsFromHeaders } from "../utils/tableColumnBuilder";
 
+type ImportedRow = Record<string, string>;
 
-type Recipient = {
-  email: string;
-  name: string;
-  company: string;
+type Column<T> = {
+  key: keyof T | string;
+  label: string;
 };
 
-const columns = [
-  { key: "email", label: "Email" },
-  { key: "name", label: "Name" },
-  { key: "company", label: "Company" },
-];
-
-const data: Recipient[] = [
-  {
-    email: "john@example.com",
-    name: "John Doe",
-    company: "ABC Corp",
-  },
-  {
-    email: "john@example.com",
-    name: "John Doe",
-    company: "ABC Corp",
-  },  {
-    email: "john@example.com",
-    name: "John Doe",
-    company: "ABC Corp",
-  },
-    {
-    email: "john@example.com",
-    name: "John Doe",
-    company: "ABC Corp",
-  },
-    {
-    email: "john@example.com",
-    name: "John Doe",
-    company: "ABC Corp",
-  },
-  {
-    email: "jane@example.com",
-    name: "Jane Smith",
-    company: "XYZ Ltd",
-  },
-];
 const SendEmail = () => {
 
   useOtpGuard();
@@ -61,6 +26,12 @@ const SendEmail = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
+
+  // variable states for data table
+  const [columns, setColumns] = useState<Column<ImportedRow>[]>([]);
+  const [data, setData] = useState<ImportedRow[]>([]);
+
+  const [detailedErrors, setDetailedErrors] = useState<string[]>([]);
 
   // FROM email display, also used in test send
   const fromEmail = getEmailFromOtpToken(); // from JWT email
@@ -84,9 +55,44 @@ const SendEmail = () => {
       await sendTestEmail(fromEmail, appPassword, toEmail);
       showToast("Test email sent successfully!", "success");
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message, "danger");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // handles createion of recipient table after importing a file
+  const handleFileImport = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      setDetailedErrors([]); // reset errors
+
+      const { headers, rows, skippedRows, errors } =
+        await importFile(file);
+
+      setColumns(buildColumnsFromHeaders<ImportedRow>(headers));
+      setData(rows);
+      setDetailedErrors(errors);
+
+      if (rows.length) {
+        showToast(`${rows.length} rows imported`, "success");
+      }
+
+      if (skippedRows.length) {
+        showToast(
+          `Skipped rows: ${skippedRows.join(", ")}`,"warning"
+        );
+      }
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setLoading(false);
+      e.target.value = "";
     }
   };
 
@@ -174,6 +180,8 @@ const SendEmail = () => {
                 type="file"
                 className="form-control"
                 accept=".csv,.xlsx"
+                onChange={handleFileImport}
+                disabled={loading}
               />
               <small className="text-muted">
                 Import your CSV/Excel file
@@ -239,6 +247,22 @@ const SendEmail = () => {
           showIndex
           pageSize={5}
         />
+        
+        {detailedErrors.length > 0 && (
+          <div className="p-3 border-top">
+            <p className="fw-bold text-danger mb-1">
+              Detailed Error Messages
+            </p>
+
+            <ul className="mb-0">
+              {detailedErrors.map((err, i) => (
+                <li key={i} className="text-danger small">
+                  {err}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* ================= MODALS ================= */}
