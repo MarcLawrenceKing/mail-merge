@@ -38,6 +38,10 @@ const SendEmail = () => {
   // for test send only
   const toEmail = getEmailFromOtpToken(); // from JWT email
 
+  // headers found, extracted from importFile helper
+  const [headers, setHeaders] = useState<string[]>([]);
+
+
   // handles test send after confirming modal
   const handleTestSend = async () => {
 
@@ -71,10 +75,12 @@ const SendEmail = () => {
     try {
       setLoading(true);
       setDetailedErrors([]); // reset errors
+      setHeaders([]) // reset headers
 
       const { headers, rows, skippedRows, errors } =
         await importFile(file);
 
+      setHeaders(headers)
       setColumns(buildColumnsFromHeaders<ImportedRow>(headers));
       setData(rows);
       setDetailedErrors(errors);
@@ -220,18 +226,59 @@ const SendEmail = () => {
         <div className="card-body">
           <div className="mb-3">
             <label className="form-label fw-semibold">
+              Recipients
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="example: {{email}}"
+            />
+            <small className="text-muted">
+              You can use any column name from your CSV/xlsx file
+            </small>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label fw-semibold">
+              Subject
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="example: OJT APPLICATION"
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label fw-semibold">
               Email Body
             </label>
             <textarea
               className="form-control"
               rows={8}
-              placeholder="Hello {{name}}, your order {{order_id}} is ready..."
+              placeholder="example: Good day Mx. {{name}},
+
+I would like to ask if there are currently any internship opportunities available, as {{company}} is listed as a company with a MOA with our school..."
             />
           </div>
-
-          <div className="text-muted">
-            <strong>Headers found:</strong> name, email, order_id, company
+          {/* ATTACHMENT */}
+          <div className="mb-3">
+            <label className="form-label fw-semibold">
+              Attachment
+            </label>
+            <input
+              type="file"
+              className="form-control"
+            />
+            <small className="text-muted">
+              Optional file attachment (same file sent to all recipients)
+            </small>
           </div>
+          {headers.length > 0 && (
+            <div className="text-muted">
+              <strong>Headers found:</strong>{" "}
+              {headers.join(", ")}
+            </div>
+          )}
         </div>
       </div>
 
