@@ -4,10 +4,11 @@ import DataTable from "../components/DataTable";
 import ReusableModal from "../components/CustomModal";
 import { useOtpGuard } from "../hooks/useOtpGuard";
 import { getEmailFromOtpToken } from "../utils/jwt";
-import { sendTestEmail } from "../api/email";
+import { sendBulkEmail, sendTestEmail } from "../api/email";
 import { useToast } from "../context/ToastContext";
 import { importFile } from "../api/file_import";
 import { buildColumnsFromHeaders } from "../utils/tableColumnBuilder";
+import fileToBase64 from "../utils/fileToBase64";
 
 type ImportedRow = Record<string, string>;
 
@@ -41,6 +42,11 @@ const SendEmail = () => {
   // headers found, extracted from importFile helper
   const [headers, setHeaders] = useState<string[]>([]);
 
+  // email template fields
+  const [recipientField, setRecipientField] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
 
   // handles test send after confirming modal
   const handleTestSend = async () => {
@@ -99,6 +105,70 @@ const SendEmail = () => {
     } finally {
       setLoading(false);
       e.target.value = "";
+    }
+  };
+
+  // handles sending of bulk emails
+  const handleSendEmails = async () => {
+    if (!fromEmail) {
+      showToast("Session expired. Please verify OTP again.", "danger");
+      return;
+    }
+
+    if (!appPassword) {
+      showToast("Please enter your Google App Password.", "danger");
+      return;
+    }
+
+    if (!recipientField) {
+      showToast("Recipient field is required.", "danger");
+      return;
+    }
+
+    // ✅ frontend validation (matches backend rule)
+    if (!headers.includes(recipientField)) {
+      showToast(
+        `Recipient field "${recipientField}" does not exist in headers`,
+        "danger"
+      );
+      return;
+    }
+
+    if (!data.length) {
+      showToast("No recipients found. Please import a file.", "danger");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      let attachmentPayload;
+
+      if (attachment) {
+        attachmentPayload = {
+          name: attachment.name,
+          type: attachment.type,
+          contentBase64: await fileToBase64(attachment),
+        };
+      }
+
+      await sendBulkEmail({
+        fromEmail,
+        appPassword,
+        headers,
+        data,
+        recipientField,
+        subject,
+        body,
+        attachment: attachmentPayload,
+      });
+
+      showToast("Emails sent successfully!", "success");
+      navigate("/send-email/summary");
+    } catch (err: any) {
+      showToast(err.message || "Failed to send emails", "danger");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -232,6 +302,11 @@ const SendEmail = () => {
               type="text"
               className="form-control"
               placeholder="example: {{email}}"
+              onChange={(e) =>
+                setRecipientField(
+                  e.target.value.replace(/[{}]/g, "").trim()
+                )
+              }
             />
             <small className="text-muted">
               You can use any column name from your CSV/xlsx file
@@ -246,6 +321,8 @@ const SendEmail = () => {
               type="text"
               className="form-control"
               placeholder="example: OJT APPLICATION"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
             />
           </div>
           <div className="mb-3">
@@ -255,6 +332,8 @@ const SendEmail = () => {
             <textarea
               className="form-control"
               rows={8}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
               placeholder="example: Good day Mx. {{name}},
 
 I would like to ask if there are currently any internship opportunities available, as {{company}} is listed as a company with a MOA with our school..."
@@ -268,6 +347,9 @@ I would like to ask if there are currently any internship opportunities availabl
             <input
               type="file"
               className="form-control"
+              onChange={(e) =>
+                setAttachment(e.target.files?.[0] || null)
+              }
             />
             <small className="text-muted">
               Optional file attachment (same file sent to all recipients)
@@ -320,10 +402,8 @@ I would like to ask if there are currently any internship opportunities availabl
         title="Confirm Send"
         body="Are you sure you want to send emails to all recipients?"
         primaryButtonName="Confirm Send"
-        onPrimaryClick={() => {
-          console.log("Sending emails...");
-          navigate("/send-email/summary")
-        }}
+        primaryButtonDisabled={loading}
+        onPrimaryClick={handleSendEmails}
       />
 
       {/* Test Send Confirmation */}

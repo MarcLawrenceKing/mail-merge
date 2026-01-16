@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { sendTestEmail } from "../services/emailService";
+import { sendBulkEmails, sendTestEmail } from "../services/emailService";
 
 import multer from "multer";
 import fs from "fs";
@@ -73,5 +73,61 @@ router.post("/import-file", upload.single("file"), async (req, res) => {
     fs.unlinkSync(req.file.path); // cleanup temp file
   }
 });
+
+// this route
+// takes parameters
+// validates params 
+// double checks recipientField 
+// calls sendBulkEmails service 
+// returns a response
+
+router.post("/send-mail", async (req: Request, res: Response) => {
+  try {
+    const {
+      fromEmail,
+      appPassword,
+      headers,
+      data,
+      recipientField,
+      subject,
+      body,
+      attachment, // optional
+    } = req.body;
+
+    if (!fromEmail || !appPassword || !headers || !data || !recipientField) {
+      return res.status(400).json({
+        message: "Missing required fields",
+      });
+    }
+
+    // ✅ only validation you want
+    if (!headers.includes(recipientField)) {
+      return res.status(400).json({
+        message: `Recipient field "${recipientField}" does not exist in headers`,
+      });
+    }
+
+    await sendBulkEmails({
+      fromEmail,
+      appPassword,
+      rows: data,
+      recipientField,
+      subject,
+      body,
+      attachment,
+    });
+
+    return res.json({
+      message: "Emails sent successfully",
+      count: data.length,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Failed to send emails",
+    });
+  }
+});
+
 
 export default router;

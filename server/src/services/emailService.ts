@@ -4,6 +4,7 @@ import { SendEmailCommand } from "@aws-sdk/client-ses";
 import { sesClient } from "../config/aws-ses";
 
 import nodemailer from "nodemailer";
+import { replacePlaceholders } from "../utils/replacePlaceholders";
 
 
 // this function
@@ -47,4 +48,66 @@ export const sendTestEmail = async (
     subject: "Test Email Successful ✅",
     text: "This is a test email sent using your Google App Password.",
   });
+};
+
+type Base64Attachment = {
+  name: string;
+  type: string;
+  contentBase64: string;
+};
+
+type SendBulkEmailParams = {
+  fromEmail: string;
+  appPassword: string;
+  rows: Record<string, string>[];
+  recipientField: string;
+  subject: string;
+  body: string;
+  attachment?: Base64Attachment;
+};
+
+// function to actually send a gmail to the recipients
+export const sendBulkEmails = async ({
+  fromEmail,
+  appPassword,
+  rows,
+  recipientField,
+  subject,
+  body,
+  attachment,
+}: SendBulkEmailParams) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: fromEmail,
+      pass: appPassword,
+    },
+  });
+
+  for (const row of rows) {
+    const to = row[recipientField];
+    if (!to) continue;
+
+    const parsedSubject = replacePlaceholders(subject, row);
+    const parsedBody = replacePlaceholders(body, row);
+
+    await transporter.sendMail({
+      from: fromEmail,
+      to,
+      subject: parsedSubject,
+      html: parsedBody.replace(/\n/g, "<br/>"),
+      attachments: attachment
+        ? [
+            {
+              filename: attachment.name,
+              content: Buffer.from(
+                attachment.contentBase64,
+                "base64"
+              ),
+              contentType: attachment.type,
+            },
+          ]
+        : [],
+    });
+  }
 };
