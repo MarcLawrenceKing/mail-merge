@@ -5,6 +5,7 @@ import { sesClient } from "../config/aws-ses";
 
 import nodemailer from "nodemailer";
 import { replacePlaceholders } from "../utils/replacePlaceholders";
+import { delay } from "../utils/delay3Seconds";
 
 
 // this function
@@ -109,5 +110,6 @@ export const sendBulkEmails = async ({
           ]
         : [],
     });
+    await delay(3000); // wait 3 seconds before sending
   }
 };
