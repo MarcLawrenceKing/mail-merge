@@ -65,6 +65,7 @@ type SendBulkEmailParams = {
   subject: string;
   body: string;
   attachment?: Base64Attachment;
+  onProgress?: (result: "sent" | "failed") => void;
 };
 
 // function to actually send a gmail to the recipients
@@ -76,6 +77,7 @@ export const sendBulkEmails = async ({
   subject,
   body,
   attachment,
+  onProgress
 }: SendBulkEmailParams) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -86,30 +88,36 @@ export const sendBulkEmails = async ({
   });
 
   for (const row of rows) {
-    const to = row[recipientField];
-    if (!to) continue;
 
-    const parsedSubject = replacePlaceholders(subject, row);
-    const parsedBody = replacePlaceholders(body, row);
+    try {
+      const to = row[recipientField];
+      if (!to) continue;
 
-    await transporter.sendMail({
-      from: fromEmail,
-      to,
-      subject: parsedSubject,
-      html: parsedBody.replace(/\n/g, "<br/>"),
-      attachments: attachment
-        ? [
-            {
-              filename: attachment.name,
-              content: Buffer.from(
-                attachment.contentBase64,
-                "base64"
-              ),
-              contentType: attachment.type,
-            },
-          ]
-        : [],
-    });
+      const parsedSubject = replacePlaceholders(subject, row);
+      const parsedBody = replacePlaceholders(body, row);
+
+      await transporter.sendMail({
+        from: fromEmail,
+        to,
+        subject: parsedSubject,
+        html: parsedBody.replace(/\n/g, "<br/>"),
+        attachments: attachment
+          ? [
+              {
+                filename: attachment.name,
+                content: Buffer.from(
+                  attachment.contentBase64,
+                  "base64"
+                ),
+                contentType: attachment.type,
+              },
+            ]
+          : [],
+      });
+      onProgress?.("sent");
+    } catch {
+      onProgress?.("failed");
+    }
     await delay(3000); // wait 3 seconds before sending
   }
 };

@@ -25,21 +25,34 @@ export const sendTestEmail = async (
   return res.json();
 };
 
-// this frontend helper fetches the /api/email/send-email route from express server
-export const sendBulkEmail = async (payload: {
-  fromEmail: string;
-  appPassword: string;
-  headers: string[];
-  data: Record<string, string>[];
-  recipientField: string;
-  subject: string;
-  body: string;
-  attachment?: {
-    name: string;
-    type: string;
-    contentBase64: string;
-  };
-}) => {
+type BulkEmailProgress = {
+  sent: number;
+  failed: number;
+  percent: number;
+};
+
+// this frontend helper fetches the /api/email/send-mail route from express server
+
+export const sendBulkEmail = async (
+  payload: {
+    fromEmail: string;
+    appPassword: string;
+    headers: string[];
+    data: Record<string, string>[];
+    recipientField: string;
+    subject: string;
+    body: string;
+    attachment?: {
+      name: string;
+      type: string;
+      contentBase64: string;
+    };
+  },
+  options: {
+    onProgress?: (progress: BulkEmailProgress) => void;
+    onDone?: () => void;
+  } = {}
+) => {
   const res = await fetch("/api/email/send-mail", {
     method: "POST",
     headers: {
@@ -48,11 +61,42 @@ export const sendBulkEmail = async (payload: {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || "Failed to send emails");
+  if (!res.ok || !res.body) {
+    throw new Error("Failed to start email sending");
   }
 
-  return res.json();
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value);
+    const events = chunk.split("\n\n");
+
+    for (const event of events) {
+      if (!event.startsWith("data:")) continue;
+
+      const data = JSON.parse(event.replace("data: ", ""));
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.done) {
+        options.onDone?.();
+        return;
+      }
+
+      if (data.percent !== undefined) {
+        options.onProgress?.({
+          sent: data.sent,
+          failed: data.failed,
+          percent: data.percent,
+        });
+      }
+    }
+  }
 };
 

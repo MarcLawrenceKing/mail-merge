@@ -80,33 +80,37 @@ router.post("/import-file", upload.single("file"), async (req, res) => {
 // double checks recipientField 
 // calls sendBulkEmails service 
 // returns a response
+// tracks success and failed emails
 
 router.post("/send-mail", async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  const {
+    fromEmail,
+    appPassword,
+    headers,
+    data,
+    recipientField,
+    subject,
+    body,
+    attachment,
+  } = req.body;
+
+  if (!headers.includes(recipientField)) {
+    res.write(
+      `data: ${JSON.stringify({ error: "Invalid recipient field" })}\n\n`
+    );
+    res.end();
+    return;
+  }
+
+  const total = data.length;
+  let sent = 0;
+  let failed = 0;
+
   try {
-    const {
-      fromEmail,
-      appPassword,
-      headers,
-      data,
-      recipientField,
-      subject,
-      body,
-      attachment, // optional
-    } = req.body;
-
-    if (!fromEmail || !appPassword || !headers || !data || !recipientField) {
-      return res.status(400).json({
-        message: "Missing required fields",
-      });
-    }
-
-    // ✅ only validation you want
-    if (!headers.includes(recipientField)) {
-      return res.status(400).json({
-        message: `Recipient field "${recipientField}" does not exist in headers`,
-      });
-    }
-
     await sendBulkEmails({
       fromEmail,
       appPassword,
@@ -115,17 +119,28 @@ router.post("/send-mail", async (req: Request, res: Response) => {
       subject,
       body,
       attachment,
+
+      // 👇 progress callback
+      onProgress: (result) => {
+        if (result === "sent") sent++;
+        else failed++;
+
+        res.write(
+          `data: ${JSON.stringify({
+            sent,
+            failed,
+            total,
+            percent: Math.round(((sent + failed) / total) * 100),
+          })}\n\n`
+        );
+      },
     });
 
-    return res.json({
-      message: "Emails sent successfully",
-      count: data.length,
-    });
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      message: "Failed to send emails",
-    });
+    res.write(`data: ${JSON.stringify({ error: "Send failed" })}\n\n`);
+    res.end();
   }
 });
 
