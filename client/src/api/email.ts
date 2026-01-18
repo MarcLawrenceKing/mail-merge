@@ -50,6 +50,7 @@ export const sendBulkEmail = async (
   },
   options: {
     onProgress?: (progress: BulkEmailProgress) => void;
+    onRecipientResult?: (r: { email: string; sent: "SUCCESS" | "FAILED" }) => void;
     onDone?: () => void;
   } = {}
 ) => {
@@ -96,6 +97,14 @@ export const sendBulkEmail = async (
           percent: data.percent,
         });
       }
+
+      if (data.email && data.result) {
+        options.onRecipientResult?.({
+          email: data.email,
+          sent: data.result === "sent" ? "SUCCESS" : "FAILED",
+        });
+      }
+      
     }
   }
 };

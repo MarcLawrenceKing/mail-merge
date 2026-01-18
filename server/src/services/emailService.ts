@@ -65,7 +65,10 @@ type SendBulkEmailParams = {
   subject: string;
   body: string;
   attachment?: Base64Attachment;
-  onProgress?: (result: "sent" | "failed") => void;
+  onProgress?: (payload: {
+    email: string;
+    result: "sent" | "failed";
+  }) => void;
 };
 
 // function to actually send a gmail to the recipients
@@ -89,10 +92,10 @@ export const sendBulkEmails = async ({
 
   for (const row of rows) {
 
-    try {
-      const to = row[recipientField];
-      if (!to) continue;
+    const to = row[recipientField];
+    if (!to) continue;
 
+    try {
       const parsedSubject = replacePlaceholders(subject, row);
       const parsedBody = replacePlaceholders(body, row);
 
@@ -114,9 +117,12 @@ export const sendBulkEmails = async ({
             ]
           : [],
       });
-      onProgress?.("sent");
+      
+      // Important: “sent” ≠ “delivered”
+      // This code determines SMTP success, not actual delivery.
+      onProgress?.({ email: to, result: "sent" });
     } catch {
-      onProgress?.("failed");
+      onProgress?.({ email: to, result: "failed" });
     }
     await delay(3000); // wait 3 seconds before sending
   }

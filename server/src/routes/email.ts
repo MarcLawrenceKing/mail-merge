@@ -121,12 +121,14 @@ router.post("/send-mail", async (req: Request, res: Response) => {
       attachment,
 
       // 👇 progress callback
-      onProgress: (result) => {
+      onProgress: ({ email, result }) => {
         if (result === "sent") sent++;
         else failed++;
 
         res.write(
           `data: ${JSON.stringify({
+            email,
+            result,
             sent,
             failed,
             total,

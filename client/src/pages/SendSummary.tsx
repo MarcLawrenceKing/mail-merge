@@ -1,5 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DataTable from "../components/DataTable";
+import { useEffect } from "react";
+import { useOtpGuard } from "../hooks/useOtpGuard";
 
 type Recipient = {
   email: string;
@@ -11,62 +13,27 @@ const columns = [
   { key: "sent", label: "Sent" },
 ];
 
-const data: Recipient[] = [
-  {
-    email: "john@example.com",
-    sent: "FAILED",
-
-  },
-  {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },  {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },
-    {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },
-    {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },
-  {
-    email: "john@example.com",
-    sent: "FAILED",
-
-  },
-  {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },  {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },
-    {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },
-    {
-    email: "john@example.com",
-    sent: "12:00:00 PHT",
-
-  },
-
-];
-
-
 const SendSummary = () => {
 
+  useOtpGuard();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // get passed recipients from navigation state
+  const recipients: Recipient[] = location.state?.recipients || [];
+
+  useEffect(() => {
+    if (!recipients) {
+      navigate("/send-email", { replace: true });
+    }
+  }, [recipients, navigate]);
+
+  const sentCount = recipients.filter(r => r.sent === "SUCCESS").length;
+  const failedCount = recipients.filter(r => r.sent === "FAILED").length;
+  const completionPercent =
+    recipients.length === 0
+      ? 0
+      : Math.round((sentCount / recipients.length) * 100);
 
   const handleGoToSendEmails = () => {
     // Navigate to a specific route
@@ -87,14 +54,14 @@ const SendSummary = () => {
               <div className="mb-3">
                 <div className="d-flex justify-content-between">
                   <span className="fw-semibold">Sent</span>
-                  <span className="text-success fw-bold">24</span>
+                  <span className="text-success fw-bold">{sentCount}</span>
                 </div>
               </div>
 
               <div className="mb-3">
                 <div className="d-flex justify-content-between">
                   <span className="fw-semibold">Failed</span>
-                  <span className="text-danger fw-bold">3</span>
+                  <span className="text-danger fw-bold">{failedCount}</span>
                 </div>
               </div>
 
@@ -106,9 +73,9 @@ const SendSummary = () => {
                   <div
                     className="progress-bar bg-success"
                     role="progressbar"
-                    style={{ width: "89%" }}
+                    style={{ width: `${completionPercent}%` }}
                   >
-                    89%
+                    {completionPercent}%
                   </div>
                 </div>
               </div>
@@ -130,7 +97,7 @@ const SendSummary = () => {
             
             <DataTable
               columns={columns}
-              data={data}
+              data={recipients}
               showIndex
               pageSize={7}
             />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "../components/DataTable";
 import ReusableModal from "../components/CustomModal";
@@ -54,6 +54,11 @@ const SendEmail = () => {
   const [failed, setFailed] = useState<number>(0);
   const [percent, setPercent] = useState<number>(0);
   const [progressOpen, setProgressOpen] = useState<boolean>(false);
+
+  // to store success and failed recipients EVEN WHEN PAGE RELOAD
+  const recipientResultsRef = useRef<
+    { email: string; sent: "SUCCESS" | "FAILED" }[]
+  >([]);
 
   // handles test send after confirming modal
   const handleTestSend = async () => {
@@ -117,6 +122,10 @@ const SendEmail = () => {
 
   // handles sending of bulk emails
   const handleSendEmails = async () => {
+
+    // reset recipient results
+    recipientResultsRef.current = [];
+
     if (!fromEmail) {
       showToast("Session expired. Please verify OTP again.", "danger");
       return;
@@ -183,12 +192,19 @@ const SendEmail = () => {
             setPercent(percent);
           },
 
+          onRecipientResult: (r) => {
+            recipientResultsRef.current.push(r);
+          },
           onDone: () => {
             showToast("Emails sent successfully!", "success");
 
             setTimeout(() => {
               setProgressOpen(false);
-              navigate("/send-email/summary");
+              navigate("/send-email/summary", {
+                state: {
+                  recipients: recipientResultsRef.current,
+                },
+              });
             }, 800);
           },
         }
