@@ -6,26 +6,46 @@ import { sesClient } from "../config/aws-ses";
 import nodemailer from "nodemailer";
 import { replacePlaceholders } from "../utils/replacePlaceholders";
 import { delay } from "../utils/delay3Seconds";
+import { resend } from "../config/resend";
 
 
 // this function
 // - takes email and OTP as parameter
 // - create SendEmailCommand (aws-sdk) and complete parameters such as source(verified_email), destination, and message (subject and body)
 // - sends the email with ses credentials
+
+// export const sendOtpEmail = async (email: string, otp: string) => {
+//   const command = new SendEmailCommand({
+//     Source: process.env.SES_VERIFIED_EMAIL!,
+//     // email = recipient
+//     Destination: { ToAddresses: [email] },
+//     Message: {
+//       Subject: { Data: "Your OTP Code" },
+//       Body: {
+//         Text: { Data: `Your OTP code is: ${otp}` },
+//       },
+//     },
+//   });
+
+//   return sesClient.send(command);
+// };
+
+
+// Resend replacement for SES
 export const sendOtpEmail = async (email: string, otp: string) => {
-  const command = new SendEmailCommand({
-    Source: process.env.SES_VERIFIED_EMAIL!,
-    // email = recipient
-    Destination: { ToAddresses: [email] },
-    Message: {
-      Subject: { Data: "Your OTP Code" },
-      Body: {
-        Text: { Data: `Your OTP code is: ${otp}` },
-      },
-    },
+  const { data, error } = await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL!,
+    to: email,
+    subject: "Your OTP Code",
+    text: `Your OTP code is: ${otp}`,
   });
 
-  return sesClient.send(command);
+  if (error) {
+    console.error("Resend error:", error);
+    throw new Error("Failed to send OTP email");
+  }
+
+  return data;
 };
 
 // this function sends a test email using the from&to email, and app password
