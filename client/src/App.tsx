@@ -12,6 +12,7 @@ import LastSetup from './pages/LastSetup';
 import SendEmail from './pages/SendEmail';
 import SendSummary from './pages/SendSummary';
 import { ToastProvider } from './context/ToastContext';
+import GuidePage from './pages/Guide';
 
 
 function App() {
@@ -19,11 +20,11 @@ function App() {
   return (
     <div className="">
       <ToastProvider>
-        <HeaderNav onLogout={() => alert("logout")}/>
+        <HeaderNav />
         {/* Route Definitions */}
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/guide" element={<UnderConstruction />} />
+          <Route path="/guide" element={<GuidePage />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify/otp" element={<VerifyOTP />} />
           <Route path="/verify/otp/app-password" element={<LastSetup />} />

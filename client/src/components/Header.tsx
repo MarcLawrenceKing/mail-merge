@@ -1,12 +1,19 @@
 // HeaderNav.tsx
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
+import { useLogout } from '../hooks/useLogout';
+import { useLocation } from 'react-router-dom';
 
-interface HeaderNavProps {
-  onLogout: () => void;
-}
 
-const HeaderNav: React.FC<HeaderNavProps> = ({ onLogout }) => {
+const HeaderNav: React.FC = () => {
+
+  const logout = useLogout();
+  const location = useLocation();
+
+  const showLogout =
+    location.pathname === "/send-email" ||
+    location.pathname === "/send-email/summary";
+
   return (
     
     <nav
@@ -37,9 +44,14 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ onLogout }) => {
               <ThemeToggle />
             </li>
           </ul>
-          <button className="btn btn-outline-danger ms-auto" onClick={onLogout}>
-            Logout
-          </button>
+          {showLogout && (
+              <button
+                className="btn btn-outline-danger ms-auto"
+                onClick={logout}
+              >
+                Logout
+              </button>
+          )}
         </div>
       </div>
     </nav>

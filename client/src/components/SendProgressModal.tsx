@@ -30,7 +30,7 @@ const SendProgressModal = ({ sent, failed, percent }: Props) => (
                 </div>
 
                 <div>
-                  <div className="fw-semibold mb-1">Completion</div>
+                  <div className="fw-semibold mb-1">Success Rate</div>
                   <div className="progress">
                     <div
                       className="progress-bar bg-success"
