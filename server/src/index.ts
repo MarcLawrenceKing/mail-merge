@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 
 import app from "./app";
 
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
 
 // test route
 app.get("/", (req: Request, res: Response) => {
@@ -14,6 +14,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
