@@ -18,15 +18,15 @@ const GuidePage: React.FC = () => {
         <ul>
           <li>Click <strong>Get Started</strong></li>
         </ul>
-        {/* <div className="border rounded p-3 text-center text-muted">
+        <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src={screenshot}
-              className="img-fluid rounded shadow-sm my-3 w-75"
+              src="public/screenshots/1.jpg"
+              className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
           </div>
-        </div> */}
+        </div>
       </section>
 
       {/* 2. Verify Google Account */}
@@ -37,8 +37,14 @@ const GuidePage: React.FC = () => {
           <li>Enter your Google email address</li>
           <li>Check your inbox for the <strong>6-digit OTP</strong></li>
         </ul>
-        <div className="border rounded p-3 text-center text-muted">
-          Screenshot: Email Verification Page
+        <div className="border rounded text-center text-muted">
+          <div className="text-center">
+            <img
+              src="public/screenshots/2.jpg"
+              className="img-fluid rounded shadow-sm"
+              alt="Guide screenshot"
+            />
+          </div>
         </div>
       </section>
 
@@ -48,9 +54,14 @@ const GuidePage: React.FC = () => {
         <ul>
           <li>Enter the <strong>6-digit OTP</strong> sent to your email</li>
         </ul>
-        <div className="border rounded p-3 text-center text-muted">
-          Screenshot: OTP Input Page
-        </div>
+        <div className="border rounded text-center text-muted">
+          <div className="text-center">
+            <img
+              src="public/screenshots/3.jpg"
+              className="img-fluid rounded shadow-sm"
+              alt="Guide screenshot"
+            />
+          </div>        </div>
       </section>
 
       {/* 4. Google App Password */}
@@ -66,9 +77,14 @@ const GuidePage: React.FC = () => {
             enter it every time you send emails.
           </li>
         </ul>
-        <div className="border rounded p-3 text-center text-muted">
-          Screenshot: App Password Instructions
-        </div>
+        <div className="border rounded text-center text-muted">
+          <div className="text-center">
+            <img
+              src="public/screenshots/4.jpg"
+              className="img-fluid rounded shadow-sm"
+              alt="Guide screenshot"
+            />
+          </div>        </div>
       </section>
 
       {/* 5. Send Email */}
@@ -99,9 +115,9 @@ const GuidePage: React.FC = () => {
           </li>
         </ul>
 
-        <div className="border rounded p-3 text-center text-muted">
+        {/* <div className="border rounded text-center text-muted">
           Screenshot: Send Email Page
-        </div>
+        </div> */}
       </section>
 
       {/* 6. Email Template */}
@@ -121,9 +137,9 @@ const GuidePage: React.FC = () => {
             <strong>ATTACHMENT:</strong> Optional file sent to all recipients (e.g., Resume)
           </li>
         </ul>
-        <div className="border rounded p-3 text-center text-muted">
+        {/* <div className="border rounded text-center text-muted">
           Screenshot: Email Template Section
-        </div>
+        </div> */}
       </section>
 
       {/* 7. Recipients Table */}
@@ -133,8 +149,14 @@ const GuidePage: React.FC = () => {
           After importing a CSV or XLSX file, a table will display all detected
           recipients.
         </p>
-        <div className="border rounded p-3 text-center text-muted">
-          Screenshot: Recipients Table
+        <div className="border rounded text-center text-muted">
+          <div className="text-center">
+            <img
+              src="public/screenshots/5.jpg"
+              className="img-fluid rounded shadow-sm"
+              alt="Guide screenshot"
+            />
+          </div>
         </div>
       </section>
 
@@ -148,8 +170,14 @@ const GuidePage: React.FC = () => {
           <li>Success rate</li>
           <li>Recipient list with individual send status</li>
         </ul>
-        <div className="border rounded p-3 text-center text-muted">
-          Screenshot: Email Summary Page
+        <div className="border rounded text-center text-muted">
+          <div className="text-center">
+            <img
+              src="public/screenshots/6.jpg"
+              className="img-fluid rounded shadow-sm"
+              alt="Guide screenshot"
+            />
+          </div>
         </div>
       </section>
 
