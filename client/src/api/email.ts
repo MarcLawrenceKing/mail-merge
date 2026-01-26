@@ -6,7 +6,7 @@ export const sendTestEmail = async (
   appPassword: string,
   toEmail: string
 ) => {
-  const res = await fetch(`${API_URL}/email/test-send`, {
+  const res = await fetch(`${API_URL}/api/email/test-send`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export const sendBulkEmail = async (
     onDone?: () => void;
   } = {}
 ) => {
-  const res = await fetch(`${API_URL}/email/send-mail`, {
+  const res = await fetch(`${API_URL}/api/email/send-mail`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
