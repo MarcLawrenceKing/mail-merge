@@ -15,7 +15,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.958.0",
     "@supabase/supabase-js": "^2.89.0",
-    "aws-sdk": "^2.1693.0",
+    "aws-sdk": "^1.18.0",
     "bcryptjs": "^3.0.3",
     "csv-parse": "^6.1.0",
     "dotenv": "^17.2.3",
@@ -28,6 +28,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.160",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",

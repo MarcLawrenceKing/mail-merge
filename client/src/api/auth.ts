@@ -1,5 +1,7 @@
+export const API_URL = import.meta.env.VITE_API_URL || "/api"; // fallback to proxy in dev
+
 export const sendOtp = async (email: string) => {
-  const res = await fetch("/api/auth/send-otp", {
+  const res = await fetch(`${API_URL}/auth/send-otp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

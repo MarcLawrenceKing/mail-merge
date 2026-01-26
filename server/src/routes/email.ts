@@ -32,7 +32,7 @@ router.post("/test-send", async (req: Request, res: Response) => {
 });
 
 // express middleware to store files temporarily in uploads
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "/tmp/uploads/" });
 
 // imports file, 
 // saves it in /uploads,
