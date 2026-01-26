@@ -21,7 +21,7 @@ const GuidePage: React.FC = () => {
         <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src="public/screenshots/1.jpg"
+              src="/screenshots/1.jpg"
               className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
@@ -40,7 +40,7 @@ const GuidePage: React.FC = () => {
         <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src="public/screenshots/2.jpg"
+              src="/screenshots/2.jpg"
               className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
@@ -57,7 +57,7 @@ const GuidePage: React.FC = () => {
         <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src="public/screenshots/3.jpg"
+              src="/screenshots/3.jpg"
               className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
@@ -80,7 +80,7 @@ const GuidePage: React.FC = () => {
         <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src="public/screenshots/4.jpg"
+              src="/screenshots/4.jpg"
               className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
@@ -152,7 +152,7 @@ const GuidePage: React.FC = () => {
         <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src="public/screenshots/5.jpg"
+              src="/screenshots/5.jpg"
               className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
@@ -173,7 +173,7 @@ const GuidePage: React.FC = () => {
         <div className="border rounded text-center text-muted">
           <div className="text-center">
             <img
-              src="public/screenshots/6.jpg"
+              src="/screenshots/6.jpg"
               className="img-fluid rounded shadow-sm"
               alt="Guide screenshot"
             />
