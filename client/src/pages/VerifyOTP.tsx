@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import { getVerifyEmail } from "../utils/authStorage";
+import { verifyOtp } from "../api/auth";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -16,30 +17,23 @@ const VerifyOTP = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
+  try {
 
-      // this is response from backend (success or failed)
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.message || "OTP verification failed", "danger");
-        return;
-      }
-
-      // if OTP is correct, create otp_token
-      sessionStorage.setItem("otp_token", data.token);
-      navigate("/verify/otp/app-password");
-
-    } catch {
-      showToast("Server error. Please try again.", "danger");
-    } finally {
-      setLoading(false);
+    if (!email) {
+      showToast("Email is missing", "danger");
+      return;
     }
+    const data = await verifyOtp(email, otp);
+
+    // store token and navigate
+    sessionStorage.setItem("otp_token", data.token);
+    navigate("/verify/otp/app-password");
+
+  } catch (err: any) {
+    showToast(err.message || "Server error. Please try again.", "danger");
+  } finally {
+    setLoading(false);
+  }
   };
 
   useEffect(() => {
