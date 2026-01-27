@@ -82,11 +82,73 @@ router.post("/import-file", upload.single("file"), async (req, res) => {
 // returns a response
 // tracks success and failed emails
 
-router.post("/send-mail", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
+// router.post("/send-mail", async (req: Request, res: Response) => {
+//   res.setHeader("Content-Type", "text/event-stream");
+//   res.setHeader("Cache-Control", "no-cache");
+//   res.setHeader("Connection", "keep-alive");
 
+//   const {
+//     fromEmail,
+//     appPassword,
+//     headers,
+//     data,
+//     recipientField,
+//     subject,
+//     body,
+//     attachment,
+//   } = req.body;
+
+//   if (!headers.includes(recipientField)) {
+//     res.write(
+//       `data: ${JSON.stringify({ error: "Invalid recipient field" })}\n\n`
+//     );
+//     res.end();
+//     return;
+//   }
+
+//   const total = data.length;
+//   let sent = 0;
+//   let failed = 0;
+
+//   try {
+//     await sendBulkEmails({
+//       fromEmail,
+//       appPassword,
+//       rows: data,
+//       recipientField,
+//       subject,
+//       body,
+//       attachment,
+
+//       // 👇 progress callback
+//       onProgress: ({ email, result }) => {
+//         if (result === "sent") sent++;
+//         else failed++;
+
+//         res.write(
+//           `data: ${JSON.stringify({
+//             email,
+//             result,
+//             sent,
+//             failed,
+//             total,
+//             percent: Math.round(((sent + failed) / total) * 100),
+//           })}\n\n`
+//         );
+//       },
+//     });
+
+//     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+//     res.end();
+//   } catch (err) {
+//     res.write(`data: ${JSON.stringify({ error: "Send failed" })}\n\n`);
+//     res.end();
+//   }
+// });
+
+
+// lamda safe approach
+router.post("/send-mail", async (req: Request, res: Response) => {
   const {
     fromEmail,
     appPassword,
@@ -99,18 +161,14 @@ router.post("/send-mail", async (req: Request, res: Response) => {
   } = req.body;
 
   if (!headers.includes(recipientField)) {
-    res.write(
-      `data: ${JSON.stringify({ error: "Invalid recipient field" })}\n\n`
-    );
-    res.end();
-    return;
+    return res.status(400).json({
+      message: "Invalid recipient field",
+    });
   }
 
-  const total = data.length;
-  let sent = 0;
-  let failed = 0;
-
   try {
+    const results: { email: string; result: "SUCCESS" | "FAILED" }[] = [];
+
     await sendBulkEmails({
       fromEmail,
       appPassword,
@@ -120,31 +178,26 @@ router.post("/send-mail", async (req: Request, res: Response) => {
       body,
       attachment,
 
-      // 👇 progress callback
       onProgress: ({ email, result }) => {
-        if (result === "sent") sent++;
-        else failed++;
-
-        res.write(
-          `data: ${JSON.stringify({
-            email,
-            result,
-            sent,
-            failed,
-            total,
-            percent: Math.round(((sent + failed) / total) * 100),
-          })}\n\n`
-        );
+        results.push({
+          email,
+          result: result === "sent" ? "SUCCESS" : "FAILED",
+        });
       },
     });
 
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+    return res.json({
+      message: "Emails sent",
+      results,
+    });
   } catch (err) {
-    res.write(`data: ${JSON.stringify({ error: "Send failed" })}\n\n`);
-    res.end();
+    console.error(err);
+    return res.status(500).json({
+      message: "Failed to send emails",
+    });
   }
 });
+
 
 
 export default router;

@@ -26,35 +26,92 @@ export const sendTestEmail = async (
   return res.json();
 };
 
-type BulkEmailProgress = {
-  sent: number;
-  failed: number;
-  percent: number;
-};
+// type BulkEmailProgress = {
+//   sent: number;
+//   failed: number;
+//   percent: number;
+// };
 
 // this frontend helper fetches the /api/email/send-mail route from express server
 
-export const sendBulkEmail = async (
-  payload: {
-    fromEmail: string;
-    appPassword: string;
-    headers: string[];
-    data: Record<string, string>[];
-    recipientField: string;
-    subject: string;
-    body: string;
-    attachment?: {
-      name: string;
-      type: string;
-      contentBase64: string;
-    };
-  },
-  options: {
-    onProgress?: (progress: BulkEmailProgress) => void;
-    onRecipientResult?: (r: { email: string; sent: "SUCCESS" | "FAILED" }) => void;
-    onDone?: () => void;
-  } = {}
-) => {
+// export const sendBulkEmail = async (
+//   payload: {
+//     fromEmail: string;
+//     appPassword: string;
+//     headers: string[];
+//     data: Record<string, string>[];
+//     recipientField: string;
+//     subject: string;
+//     body: string;
+//     attachment?: {
+//       name: string;
+//       type: string;
+//       contentBase64: string;
+//     };
+//   },
+//   options: {
+//     onProgress?: (progress: BulkEmailProgress) => void;
+//     onRecipientResult?: (r: { email: string; sent: "SUCCESS" | "FAILED" }) => void;
+//     onDone?: () => void;
+//   } = {}
+// ) => {
+//   const res = await fetch(`${API_URL}/api/email/send-mail`, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(payload),
+//   });
+
+//   if (!res.ok || !res.body) {
+//     throw new Error("Failed to start email sending");
+//   }
+
+//   const reader = res.body.getReader();
+//   const decoder = new TextDecoder();
+
+//   while (true) {
+//     const { value, done } = await reader.read();
+//     if (done) break;
+
+//     const chunk = decoder.decode(value);
+//     const events = chunk.split("\n\n");
+
+//     for (const event of events) {
+//       if (!event.startsWith("data:")) continue;
+
+//       const data = JSON.parse(event.replace("data: ", ""));
+
+//       if (data.error) {
+//         throw new Error(data.error);
+//       }
+
+//       if (data.done) {
+//         options.onDone?.();
+//         return;
+//       }
+
+//       if (data.percent !== undefined) {
+//         options.onProgress?.({
+//           sent: data.sent,
+//           failed: data.failed,
+//           percent: data.percent,
+//         });
+//       }
+
+//       if (data.email && data.result) {
+//         options.onRecipientResult?.({
+//           email: data.email,
+//           sent: data.result === "sent" ? "SUCCESS" : "FAILED",
+//         });
+//       }
+      
+//     }
+//   }
+// };
+
+// lamda safe approact (no live loading)
+export const sendBulkEmail = async (payload: any) => {
   const res = await fetch(`${API_URL}/api/email/send-mail`, {
     method: "POST",
     headers: {
@@ -63,50 +120,11 @@ export const sendBulkEmail = async (
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok || !res.body) {
-    throw new Error("Failed to start email sending");
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send emails");
   }
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    const events = chunk.split("\n\n");
-
-    for (const event of events) {
-      if (!event.startsWith("data:")) continue;
-
-      const data = JSON.parse(event.replace("data: ", ""));
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      if (data.done) {
-        options.onDone?.();
-        return;
-      }
-
-      if (data.percent !== undefined) {
-        options.onProgress?.({
-          sent: data.sent,
-          failed: data.failed,
-          percent: data.percent,
-        });
-      }
-
-      if (data.email && data.result) {
-        options.onRecipientResult?.({
-          email: data.email,
-          sent: data.result === "sent" ? "SUCCESS" : "FAILED",
-        });
-      }
-      
-    }
-  }
+  return data;
 };
-

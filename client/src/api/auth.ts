@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || ""; // fallback to proxy in dev
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost"; // fallback to proxy in dev
 
 export const sendOtp = async (email: string) => {
   const res = await fetch(`${API_URL}/api/auth/send-otp`, {

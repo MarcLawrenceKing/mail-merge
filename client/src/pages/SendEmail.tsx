@@ -9,7 +9,7 @@ import { useToast } from "../context/ToastContext";
 import { importFile } from "../api/file_import";
 import { buildColumnsFromHeaders } from "../utils/tableColumnBuilder";
 import fileToBase64 from "../utils/fileToBase64";
-import SendProgressModal from "../components/SendProgressModal";
+import { SendLoadingModal } from "../components/SendProgressModal";
 
 type ImportedRow = Record<string, string>;
 
@@ -50,10 +50,10 @@ const SendEmail = () => {
   const [attachment, setAttachment] = useState<File | null>(null);
 
   // for SSE of sending progress
-  const [sent, setSent] = useState<number>(0);
-  const [failed, setFailed] = useState<number>(0);
-  const [percent, setPercent] = useState<number>(0);
-  const [progressOpen, setProgressOpen] = useState<boolean>(false);
+  // const [sent, setSent] = useState<number>(0);
+  // const [failed, setFailed] = useState<number>(0);
+  // const [percent, setPercent] = useState<number>(0);
+  // const [progressOpen, setProgressOpen] = useState<boolean>(false);
 
   // to store success and failed recipients EVEN WHEN PAGE RELOAD
   const recipientResultsRef = useRef<
@@ -155,17 +155,7 @@ const SendEmail = () => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setProgressOpen(true);
-
-      // reset progress UI
-      setSent(0);
-      setFailed(0);
-      setPercent(0);
-
-      let attachmentPayload;
-
+    let attachmentPayload;
       if (attachment) {
         attachmentPayload = {
           name: attachment.name,
@@ -174,44 +164,81 @@ const SendEmail = () => {
         };
       }
 
-      await sendBulkEmail(
-        {
-          fromEmail,
-          appPassword,
-          headers,
-          data,
-          recipientField,
-          subject,
-          body,
-          attachment: attachmentPayload,
+    // try {
+    //   setLoading(true);
+    //   setProgressOpen(true);
+
+    //   // reset progress UI
+    //   setSent(0);
+    //   setFailed(0);
+    //   setPercent(0);
+
+    //   await sendBulkEmail(
+    //     {
+    //       fromEmail,
+    //       appPassword,
+    //       headers,
+    //       data,
+    //       recipientField,
+    //       subject,
+    //       body,
+    //       attachment: attachmentPayload,
+    //     },
+    //     {
+    //       onProgress: ({ sent, failed, percent }) => {
+    //         setSent(sent);
+    //         setFailed(failed);
+    //         setPercent(percent);
+    //       },
+
+    //       onRecipientResult: (r) => {
+    //         recipientResultsRef.current.push(r);
+    //       },
+    //       onDone: () => {
+    //         showToast("Emails sent successfully!", "success");
+
+    //         setTimeout(() => {
+    //           setProgressOpen(false);
+    //           navigate("/send-email/summary", {
+    //             state: {
+    //               recipients: recipientResultsRef.current,
+    //             },
+    //           });
+    //         }, 800);
+    //       },
+    //     }
+    //   );
+    // } catch (err: any) {
+    //   showToast(err.message || "Failed to send emails", "danger");
+    //   setProgressOpen(false);
+    // } finally {
+    //   setLoading(false);
+    // }
+
+    // no-SSE update
+    try {
+      setLoading(true);
+
+      const result = await sendBulkEmail({
+        fromEmail,
+        appPassword,
+        headers,
+        data,
+        recipientField,
+        subject,
+        body,
+        attachment: attachmentPayload,
+      });
+
+      showToast("Emails sent successfully!", "success");
+
+      navigate("/send-email/summary", {
+        state: {
+          recipients: result.results,
         },
-        {
-          onProgress: ({ sent, failed, percent }) => {
-            setSent(sent);
-            setFailed(failed);
-            setPercent(percent);
-          },
-
-          onRecipientResult: (r) => {
-            recipientResultsRef.current.push(r);
-          },
-          onDone: () => {
-            showToast("Emails sent successfully!", "success");
-
-            setTimeout(() => {
-              setProgressOpen(false);
-              navigate("/send-email/summary", {
-                state: {
-                  recipients: recipientResultsRef.current,
-                },
-              });
-            }, 800);
-          },
-        }
-      );
+      });
     } catch (err: any) {
       showToast(err.message || "Failed to send emails", "danger");
-      setProgressOpen(false);
     } finally {
       setLoading(false);
     }
@@ -461,12 +488,16 @@ I would like to ask if there are currently any internship opportunities availabl
         onPrimaryClick={handleTestSend}
       />
 
-      {progressOpen && (
+      {/* {progressOpen && (
         <SendProgressModal
           sent={sent}
           failed={failed}
           percent={percent}
         />
+      )} */}
+
+      {loading && (
+        <SendLoadingModal message="This may take a few moments depending on the number of recipients." />
       )}
     </div>
   );
