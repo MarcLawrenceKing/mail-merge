@@ -15,7 +15,7 @@ export const importFile = async (
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_URL}/email/import-file`, {
+  const res = await fetch(`${API_URL}/api/email/import-file`, {
     method: "POST",
     body: formData,
   });
