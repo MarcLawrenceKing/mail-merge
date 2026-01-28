@@ -144,6 +144,6 @@ export const sendBulkEmails = async ({
     } catch {
       onProgress?.({ email: to, result: "failed" });
     }
-    await delay(3000); // wait 3 seconds before sending
+    //await delay(3000); // wait 3 seconds before sending
   }
 };
