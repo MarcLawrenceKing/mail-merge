@@ -1,54 +1,31 @@
-type ValidationResult = {
-  validRows: any[];
-  invalid: {
-    rowIndex: number;
-    email: string;
-    reason: string;
-  }[];
-};
-
 const EMAIL_REGEX =
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const validateRecipients = (
   rows: any[],
   recipientField: string
-): ValidationResult => {
+) => {
   const validRows: any[] = [];
-  const invalid: ValidationResult["invalid"] = [];
+  const invalid: {
+    email: string;
+    reason: string;
+  }[] = [];
 
-  rows.forEach((row, index) => {
+  for (const row of rows) {
     const email = row[recipientField];
 
     if (!email) {
-      invalid.push({
-        rowIndex: index + 1,
-        email: "",
-        reason: "Missing email",
-      });
-      return;
-    }
-
-    if (typeof email !== "string") {
-      invalid.push({
-        rowIndex: index + 1,
-        email: String(email),
-        reason: "Invalid email type",
-      });
-      return;
+      invalid.push({ email: "(empty)", reason: "Missing email" });
+      continue;
     }
 
     if (!EMAIL_REGEX.test(email)) {
-      invalid.push({
-        rowIndex: index + 1,
-        email,
-        reason: "Invalid email format",
-      });
-      return;
+      invalid.push({ email, reason: "Invalid email format" });
+      continue;
     }
 
     validRows.push(row);
-  });
+  }
 
   return { validRows, invalid };
 };

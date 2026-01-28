@@ -4,6 +4,7 @@ import { sendBulkEmails, sendTestEmail } from "../services/emailService";
 import multer from "multer";
 import fs from "fs";
 import { parseCSV, parseXLSX } from "../services/fileParsingService";
+import { validateRecipients } from "../utils/validateRecipients";
 
 const router = Router();
 
@@ -166,13 +167,39 @@ router.post("/send-mail", async (req: Request, res: Response) => {
     });
   }
 
-  try {
-    const results: { email: string; result: "SUCCESS" | "FAILED" }[] = [];
+  // ✅ PRE-FLIGHT VALIDATION
+  const { validRows, invalid } = validateRecipients(
+    data,
+    recipientField
+  );
 
+  if (!validRows.length) {
+    return res.status(400).json({
+      message: "No valid email recipients found",
+      invalid,
+    });
+  }
+
+  const results: {
+    email: string;
+    sent: "SUCCESS" | "FAILED";
+    reason?: string;
+  }[] = [];
+
+  // ❌ Mark invalid recipients as FAILED
+  for (const item of invalid) {
+    results.push({
+      email: item.email,
+      sent: "FAILED",
+      reason: item.reason,
+    });
+  }
+
+  try {
     await sendBulkEmails({
       fromEmail,
       appPassword,
-      rows: data,
+      rows: validRows, // 👈 only valid rows
       recipientField,
       subject,
       body,
@@ -181,13 +208,26 @@ router.post("/send-mail", async (req: Request, res: Response) => {
       onProgress: ({ email, result }) => {
         results.push({
           email,
-          result: result === "sent" ? "SUCCESS" : "FAILED",
+          sent: result === "sent" ? "SUCCESS" : "FAILED",
         });
       },
     });
 
+    // 📊 Summary
+    const sent = results.filter(r => r.sent === "SUCCESS").length;
+    const failed = results.length - sent;
+    const total = results.length;
+
     return res.json({
-      message: "Emails sent",
+      message: "Email sending completed",
+      summary: {
+        total,
+        sent,
+        failed,
+        percent: total
+          ? Math.round(((sent + failed) / total) * 100)
+          : 0,
+      },
       results,
     });
   } catch (err) {

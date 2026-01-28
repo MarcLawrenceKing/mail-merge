@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 
 import app from "./app";
 
+// uncomment for DEV 
 // const PORT = process.env.PORT || 3000;
 
 // test route
