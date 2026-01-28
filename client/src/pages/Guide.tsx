@@ -2,7 +2,7 @@ import React from "react";
 
 const GuidePage: React.FC = () => {
   return (
-    <div className="container my-5">
+    <div className="container my-5 py-5">
       {/* Page Header */}
       <div className="mb-5 text-center">
         <h3 className="fw-bold">Mail Merge App: User Guide</h3>
@@ -183,8 +183,10 @@ const GuidePage: React.FC = () => {
 
       {/* Footer Note */}
       <div className="alert alert-info mt-5">
-        <strong>Tip:</strong> Make sure your CSV/XLSX headers match the variables
-        used in your email body.
+        <strong>Tips:</strong> <br></br>
+        1. Make sure your CSV/XLSX headers match the variables
+        used in your email body. <br></br>
+        2. Limit recipients to be less than 20 per batch to prevent server errors
       </div>
     </div>
   );
