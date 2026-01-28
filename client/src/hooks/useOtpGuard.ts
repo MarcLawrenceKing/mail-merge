@@ -47,7 +47,7 @@ export const useOtpGuard = (options?: UseOtpGuardOptions) => {
 
     const validateToken = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/auth/otp-guard-check`, {
+        const res = await fetch(`${API_URL}/auth/otp-guard-check`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
