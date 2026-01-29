@@ -2,20 +2,41 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import { getVerifyEmail } from "../utils/authStorage";
-import { verifyOtp } from "../api/auth";
+import { sendOtp, verifyOtp } from "../api/auth";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
 
   const email = getVerifyEmail();
   const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const { showToast } = useToast();
 
+  const handleResendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResendLoading(true);
+
+    if (!email) {
+      showToast("Email is required", "danger");
+      return;
+    }
+    try {
+      // helper function
+      await sendOtp(email); 
+      showToast("OTP sent to your email", "success");
+
+    } catch (err: any) {
+      showToast(err.message || "Unable to send OTP", "danger");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitLoading(true);
 
   try {
 
@@ -32,7 +53,7 @@ const VerifyOTP = () => {
   } catch (err: any) {
     showToast(err.message || "Server error. Please try again.", "danger");
   } finally {
-    setLoading(false);
+    setSubmitLoading(false);
   }
   };
 
@@ -74,9 +95,18 @@ const VerifyOTP = () => {
         <button
           className="btn btn-primary w-100"
           onClick={handleSubmit}
-          disabled={!otp || loading}
+          disabled={!otp || submitLoading}
         >
-          {loading ? "Sending..." : "Submit"}
+          {submitLoading ? "Sending..." : "Submit"}
+        </button>
+
+        <p className="text-muted text-center mt-4 mb-2">Did not receive OTP?</p>
+        <button
+          className="btn btn-outline-secondary w-100"
+          onClick={handleResendOtp}
+          disabled={resendLoading}
+        >
+          {resendLoading ? "Sending..." : "Resend OTP"}
         </button>
 
       </div>
