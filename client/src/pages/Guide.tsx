@@ -187,6 +187,7 @@ const GuidePage: React.FC = () => {
         1. Make sure your CSV/XLSX headers match the variables
         used in your email body. <br></br>
         2. Limit recipients to be less than 20 per batch to prevent server errors
+        3. Import attachments less than 50KB if possible
       </div>
     </div>
   );
