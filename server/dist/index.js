@@ -112475,7 +112475,7 @@ var supabase = createClient(
 
 // src/services/otpService.ts
 var import_jsonwebtoken = __toESM(require_jsonwebtoken());
-var OTP_EXPIRY_MS = 1 * 60 * 1e3;
+var OTP_EXPIRY_MS = 10 * 60 * 1e3;
 var OTP_COOLDOWN_MS = 1 * 60 * 1e3;
 var generateAndStoreOtp = async (email) => {
   const { data: existingUser, error: fetchError } = await supabase.from("tbl_user").select("last_login_attempt").eq("email", email).single();

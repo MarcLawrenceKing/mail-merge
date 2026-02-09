@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { supabase } from "../config/supabase";
 import jwt from "jsonwebtoken";
 
-const OTP_EXPIRY_MS = 1 * 60 * 1000; // CHANGE THIS TO 10 in production
+const OTP_EXPIRY_MS = 10 * 60 * 1000; // CHANGE THIS TO 10 in production
 const OTP_COOLDOWN_MS = 1 * 60 * 1000;
 
 // this function
