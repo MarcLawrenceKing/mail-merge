@@ -122,6 +122,7 @@ Update the following lines with your local database credentials:
 ```env
 SUPABASE_URL=your_supabase_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
+DATABASE_URL=postgresql://postgres.your-project-ref:your_password@aws-0-region.pooler.supabase.com:6543/postgres?sslmode=require
 
 RESEND_API_KEY=your_resend_api_key
 
@@ -129,23 +130,20 @@ PORT=3000 # or other
 JWT_SECRET=secret_to_encrypt_session_token
 ```
 
-### 5. Create Supabase Database Table
-Run the following SQL in your Supabase SQL Editor:
+### 5. Run database migrations (Drizzle ORM)
+Apply the committed migration to your Supabase project:
 ```bash
-create table if not exists public.tbl_user (
-  user_id uuid not null default gen_random_uuid(),
-  email text not null,
-  otp_hash text,
-  expires_at timestamptz,
-  attempts integer not null default 0,
-  last_login timestamptz,
-  last_login_attempt timestamptz,
-  created_at timestamptz not null default now(),
-
-  constraint tbl_user_pkey primary key (user_id),
-  constraint tbl_user_email_key unique (email)
-);
+cd server
+npm run db:migrate
 ```
+
+When you change the schema in `server/src/db/schema.ts`, generate a new migration:
+```bash
+cd server
+npm run db:generate
+```
+
+`db:migrate` is written to be idempotent for `tbl_user`, so existing data is not deleted.
 
 ### 6. Start the development server
 Frontend
