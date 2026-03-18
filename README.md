@@ -90,6 +90,7 @@ This project was built mainly to help students applying for OJT / internships st
 ### Requirements
 - Node.js (v18+)
 - npm (v9+)
+- Docker + Docker Compose (optional, for containerized local setup)
 - Supabase account
 - Google account (for App Password)
 - Resend account
@@ -99,39 +100,40 @@ This project was built mainly to help students applying for OJT / internships st
 git clone https://github.com/MarcLawrenceKing/mail-merge.git
 cd mail-merge
 ```
-### 2. Install Dependencies
-Frontend
-```bash
-cd client
-npm install
-```
-Backend
-```bash
-cd server
-npm install
-```
 
-### 3. Create environment file
+### 2. Create environment files
+Backend
 ```bash
 cd server
 cp .env.example .env
 ```
 
-### 4. Configure `.env`
-Update the following lines with your local database credentials:
+Frontend
+```bash
+cd ../client
+cp .env.example .env
+```
+
+### 3. Configure environment variables
+`server/.env`
 ```env
 SUPABASE_URL=your_supabase_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
 DATABASE_URL=postgresql://postgres.your-project-ref:your_password@aws-0-region.pooler.supabase.com:6543/postgres?sslmode=require
 
 RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=your_verified_sender@yourdomain.com
 
-PORT=3000 # or other
+PORT=3005
 JWT_SECRET=secret_to_encrypt_session_token
 ```
 
-### 5. Run database migrations (Drizzle ORM)
-Apply the committed migration to your Supabase project:
+`client/.env`
+```env
+VITE_API_URL=http://localhost:3005
+```
+
+### 4. Run database migrations (Drizzle ORM)
 ```bash
 cd server
 npm run db:migrate
@@ -145,14 +147,34 @@ npm run db:generate
 
 `db:migrate` is written to be idempotent for `tbl_user`, so existing data is not deleted.
 
-### 6. Start the development server
-Frontend
+### 5A. Start locally with Node.js
+Install dependencies:
+```bash
+cd client
+npm install
+cd ../server
+npm install
+```
+
+Run apps:
 ```bash
 cd client
 npm run dev
-```
-Backend
-```bash
-cd server
+cd ../server
 npm run dev
 ```
+
+### 5B. Start with Docker (separate FE/BE compose files)
+Backend terminal:
+```bash
+cd server
+docker compose up --build
+```
+
+Frontend terminal:
+```bash
+cd client
+docker compose up --build
+```
+
+Open `http://localhost:5173`.
