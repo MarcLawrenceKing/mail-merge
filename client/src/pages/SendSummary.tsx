@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import DataTable from "../components/DataTable";
 import { useEffect } from "react";
-import { useOtpGuard } from "../hooks/useOtpGuard";
+import { useSessionGuard } from "../hooks/useSessionGuard";
 
 type Recipient = {
   email: string;
@@ -15,7 +15,7 @@ const columns = [
 
 const SendSummary = () => {
 
-  useOtpGuard();
+  useSessionGuard();
   const navigate = useNavigate();
   const location = useLocation();
 

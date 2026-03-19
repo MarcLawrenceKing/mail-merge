@@ -1,16 +1,42 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOtpGuard } from "../hooks/useOtpGuard";
+import { useLogout } from "../hooks/useLogout";
 import { clearVerifyEmail } from "../utils/authStorage";
+import { useToast } from "../context/ToastContext";
+import { getGoogleOAuthAuthUrl } from "../api/auth";
+import { getEmailFromOtpToken } from "../utils/jwt";
 
 const LastSetup = () => {
   useOtpGuard(); // checks the session JWT
   clearVerifyEmail(); // clears the email being verified in VerifyOTP
   const navigate = useNavigate();
-    
-  const handleAppPassword = () => {
-    // placeholder action
-    //alert("App Password flow will be handled here");
-    navigate("/send-email")
+  const logout = useLogout();
+  const { showToast } = useToast();
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const otpEmail = getEmailFromOtpToken();
+
+  const handleProceedWithOAuth = async () => {
+    const token = sessionStorage.getItem("otp_token");
+    if (!token) {
+      showToast("Session expired. Please verify OTP again.", "danger");
+      navigate("/verify", { replace: true });
+      return;
+    }
+
+    try {
+      setOauthLoading(true);
+      const authUrl = await getGoogleOAuthAuthUrl(token, window.location.origin);
+      window.location.href = authUrl;
+    } catch (err: any) {
+      showToast(err.message || "Unable to start Google OAuth.", "danger");
+    } finally {
+      setOauthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -20,49 +46,42 @@ const LastSetup = () => {
         style={{ maxWidth: "520px", width: "100%" }}
       >
         <h3 className="fw-bold mb-4 text-center">
-          Final Setup Step
+          Connect Gmail Securely
         </h3>
 
         <p className="text-muted">
-          By default, Gmail does not allow third-party applications <span className="fst-italic">(like this one)</span> to perform actions such as sending emails on your behalf.
+          You are verified with OTP. The next recommended step is signing in with
+          your Google account using <strong>OAuth</strong>.
         </p>
 
         <p className="text-muted">
-          To continue, you’ll need to generate a <strong>Google App Password</strong>.
-          This password authorizes this app to send emails securely using your
-          account. You may delete the App Password immediately after use.
+          OAuth lets you authorize this app directly from Google, so you do not
+          need to create and paste an app password manually.
         </p>
 
         <p className="text-muted">
-          <strong>We do not store your App Password.</strong> It is used only for
-         sending emails. You can revoke it at any time from
-          your Google Account settings.
+          Sign in with this same email in Google OAuth:{" "}
+          <strong>{otpEmail || "your verified email"}</strong>.
         </p>
 
-        <p className="text-muted mb-2">
-          <a
-            href="https://support.google.com/accounts/answer/185833"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn how to generate App Passwords
-          </a>
-        </p>
         <p className="text-muted mb-4">
-          <a
-            href="https://www.youtubetrimmer.com/view/?v=74QQfPrk4vE&start=13&end=106&loop=0"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            1 minute youtube tutorial
-          </a>
+          If you prefer not to continue right now, you can logout and return
+          later.
         </p>
 
         <button
           className="btn btn-primary w-100"
-          onClick={handleAppPassword}
+          onClick={handleProceedWithOAuth}
+          disabled={oauthLoading}
         >
-          I already have an App Password
+          {oauthLoading ? "Redirecting..." : "Proceed with OAuth"}
+        </button>
+
+        <button
+          className="btn btn-outline-secondary w-100 mt-2"
+          onClick={handleLogout}
+        >
+          Logout
         </button>
       </div>
     </div>

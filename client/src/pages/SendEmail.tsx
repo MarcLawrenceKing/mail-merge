@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "../components/DataTable";
 import ReusableModal from "../components/CustomModal";
-import { useOtpGuard } from "../hooks/useOtpGuard";
+import { useSessionGuard } from "../hooks/useSessionGuard";
 import { getEmailFromOtpToken } from "../utils/jwt";
 import { sendBulkEmail, sendTestEmail } from "../api/email";
 import { useToast } from "../context/ToastContext";
@@ -20,7 +20,7 @@ type Column<T> = {
 
 const SendEmail = () => {
 
-  useOtpGuard();
+  useSessionGuard();
   const { showToast } = useToast();
   const [appPassword, setAppPassword] = useState("");
   const [loading, setLoading] = useState(false);

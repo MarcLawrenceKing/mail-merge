@@ -6,6 +6,7 @@ const app = express();
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  process.env.CLIENT_URL || "",
 ]);
 
 app.use((req, res, next) => {
@@ -29,6 +30,14 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+const redirectGoogleCallbackToAuth = (req: express.Request, res: express.Response) => {
+  const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+  return res.redirect(`/api/auth/google/callback${query}`);
+};
+
+app.get("/oauth/google/callback", redirectGoogleCallbackToAuth);
+
 app.use("/api", routes);
 
 export default app;

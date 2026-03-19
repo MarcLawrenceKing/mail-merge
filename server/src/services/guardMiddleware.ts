@@ -1,34 +1,35 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-export interface OtpJwtPayload {
+export interface SessionJwtPayload {
   email: string;
   otpVerified: boolean;
+  oauthVerified: boolean;
   iat: number;
   exp: number;
 }
 
-// this function verifies the OTP whether it is valid or expired
+export interface AuthenticatedRequest extends Request {
+  auth?: SessionJwtPayload;
+}
 
-// - reads the authHeader and token
-// - return if authentication token is invalid or null
-// - decode the jwt using JWT_SECRET and return error if OTP 
+const extractBearerToken = (authHeader?: string) => {
+  if (!authHeader) return null;
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme !== "Bearer" || !token) return null;
+  return token;
+};
+
+const verifySessionToken = (token: string) => {
+  return jwt.verify(token, process.env.JWT_SECRET as string) as SessionJwtPayload;
+};
 
 export const requireOtpVerified = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({
-      message: "Missing authentication token.",
-    });
-  }
-
-  const token = authHeader.split(" ")[1];
-
+  const token = extractBearerToken(req.headers.authorization);
   if (!token) {
     return res.status(401).json({
       message: "Invalid authentication token.",
@@ -36,10 +37,7 @@ export const requireOtpVerified = (
   }
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as OtpJwtPayload;
+    const decoded = verifySessionToken(token);
 
     if (!decoded.otpVerified) {
       return res.status(403).json({
@@ -47,9 +45,43 @@ export const requireOtpVerified = (
       });
     }
 
-    // optional: attach user details (like email) to request
-    // (req as any).user = decoded;
+    (req as AuthenticatedRequest).auth = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({
+      message: "Session expired or invalid. Please verify OTP again.",
+    });
+  }
+};
 
+export const requireOtpAndOAuthVerified = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = extractBearerToken(req.headers.authorization);
+  if (!token) {
+    return res.status(401).json({
+      message: "Invalid authentication token.",
+    });
+  }
+
+  try {
+    const decoded = verifySessionToken(token);
+
+    if (!decoded.otpVerified) {
+      return res.status(403).json({
+        message: "OTP verification required.",
+      });
+    }
+
+    if (!decoded.oauthVerified) {
+      return res.status(403).json({
+        message: "Google OAuth verification required.",
+      });
+    }
+
+    (req as AuthenticatedRequest).auth = decoded;
     next();
   } catch (err) {
     return res.status(403).json({

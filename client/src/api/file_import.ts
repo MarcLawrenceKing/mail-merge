@@ -12,11 +12,13 @@ export type ImportResponse = {
 export const importFile = async (
   file: File
 ): Promise<ImportResponse> => {
+  const token = sessionStorage.getItem("otp_token");
   const formData = new FormData();
   formData.append("file", file);
 
   const res = await fetch(`${API_URL}/api/email/import-file`, {
     method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     body: formData,
   });
 

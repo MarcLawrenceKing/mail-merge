@@ -144,7 +144,7 @@ export const verifyOtp = async (email: string, otp: string) => {
     }
   // 6. Issue short-lived JWT (OTP verified only)
   const token = jwt.sign(
-    { email, otpVerified: true },
+    { email, otpVerified: true, oauthVerified: false },
     process.env.JWT_SECRET!,
     { expiresIn: "10m" } // only valid for password step
   );

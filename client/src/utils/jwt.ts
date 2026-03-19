@@ -1,6 +1,7 @@
 type OtpJwtPayload = {
   email: string;
   otpVerified: boolean;
+  oauthVerified: boolean;
   iat: number;
   exp: number;
 };

@@ -33,3 +33,28 @@ export const verifyOtp = async (email: string, otp: string) => {
 
   return res.json();
 };
+
+export const getGoogleOAuthAuthUrl = async (token: string, clientUrl?: string) => {
+  const endpoint = new URL(`${API_URL}/api/auth/google/auth-url`, window.location.origin);
+  if (clientUrl) {
+    endpoint.searchParams.set("clientUrl", clientUrl);
+  }
+
+  const res = await fetch(endpoint.toString(), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to start Google OAuth");
+  }
+
+  if (!data?.authUrl) {
+    throw new Error("OAuth URL not found in response");
+  }
+
+  return data.authUrl as string;
+};

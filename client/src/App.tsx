@@ -9,6 +9,7 @@ import Landing from './pages/Landing';
 import Verify from './pages/Verify';
 import VerifyOTP from './pages/VerifyOTP';
 import LastSetup from './pages/LastSetup';
+import OAuthCallback from './pages/OAuthCallback';
 import SendEmail from './pages/SendEmail';
 import SendSummary from './pages/SendSummary';
 import { ToastProvider } from './context/ToastContext';
@@ -28,6 +29,7 @@ function App() {
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify/otp" element={<VerifyOTP />} />
           <Route path="/verify/otp/app-password" element={<LastSetup />} />
+          <Route path="/verify/otp/oauth/callback" element={<OAuthCallback />} />
           <Route path="/send-email" element={<SendEmail />} />
           <Route path="/send-email/summary" element={<SendSummary />} />
 

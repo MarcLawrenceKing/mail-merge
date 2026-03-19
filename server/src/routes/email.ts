@@ -5,8 +5,10 @@ import multer from "multer";
 import fs from "fs";
 import { parseCSV, parseXLSX } from "../services/fileParsingService";
 import { validateRecipients } from "../utils/validateRecipients";
+import { requireOtpAndOAuthVerified } from "../services/guardMiddleware";
 
 const router = Router();
+router.use(requireOtpAndOAuthVerified);
 
 // this route "/api/email/test-send" test sends takes from & to emails, and app password to mail the user's self using nodemailer
 router.post("/test-send", async (req: Request, res: Response) => {

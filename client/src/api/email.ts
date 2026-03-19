@@ -1,16 +1,24 @@
 import { API_URL } from "./auth";
 
+const getToken = () => sessionStorage.getItem("otp_token");
+
 // this frontend helper fetches the /api/email/test-send route from express server
 export const sendTestEmail = async (
   fromEmail: string,
   appPassword: string,
   toEmail: string
 ) => {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_URL}/api/email/test-send`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({
       fromEmail,
       appPassword,
@@ -112,11 +120,17 @@ export const sendTestEmail = async (
 
 // lamda safe approact (no live loading)
 export const sendBulkEmail = async (payload: any) => {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_URL}/api/email/send-mail`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(payload),
   });
 
