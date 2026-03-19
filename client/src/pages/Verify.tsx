@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { sendOtp } from "../api/auth";
 import { useToast } from "../context/ToastContext";
 import { setVerifyEmail } from "../utils/authStorage";
+import { hasValidAuthenticatedSessionToken } from "../utils/jwt";
 
 
 
@@ -14,6 +15,12 @@ const Verify = () => {
   const [loading, setLoading] = useState(false);
 
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (hasValidAuthenticatedSessionToken()) {
+      navigate("/send-email", { replace: true });
+    }
+  }, [navigate]);
 
 
   const handleSendOtp = async (e: React.FormEvent) => {

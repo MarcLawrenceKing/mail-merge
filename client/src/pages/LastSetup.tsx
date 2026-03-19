@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOtpGuard } from "../hooks/useOtpGuard";
 import { useLogout } from "../hooks/useLogout";
 import { clearVerifyEmail } from "../utils/authStorage";
 import { useToast } from "../context/ToastContext";
 import { getGoogleOAuthAuthUrl } from "../api/auth";
-import { getEmailFromOtpToken } from "../utils/jwt";
+import { getEmailFromOtpToken, hasValidAuthenticatedSessionToken } from "../utils/jwt";
 
 const LastSetup = () => {
   useOtpGuard(); // checks the session JWT
@@ -15,6 +15,12 @@ const LastSetup = () => {
   const { showToast } = useToast();
   const [oauthLoading, setOauthLoading] = useState(false);
   const otpEmail = getEmailFromOtpToken();
+
+  useEffect(() => {
+    if (hasValidAuthenticatedSessionToken()) {
+      navigate("/send-email", { replace: true });
+    }
+  }, [navigate]);
 
   const handleProceedWithOAuth = async () => {
     const token = sessionStorage.getItem("otp_token");

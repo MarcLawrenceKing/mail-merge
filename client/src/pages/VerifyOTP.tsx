@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import { getVerifyEmail } from "../utils/authStorage";
 import { sendOtp, verifyOtp } from "../api/auth";
+import { hasValidAuthenticatedSessionToken } from "../utils/jwt";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const VerifyOTP = () => {
   const [resendLoading, setResendLoading] = useState(false);
 
   const { showToast } = useToast();
+  const hasAuthenticatedSession = hasValidAuthenticatedSessionToken();
 
   const handleResendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,13 +60,18 @@ const VerifyOTP = () => {
   };
 
   useEffect(() => {
+    if (hasAuthenticatedSession) {
+      navigate("/send-email", { replace: true });
+      return;
+    }
+
     if (!email) {
       // show toast here
       showToast("Invalid access. Please enter your email first.", "danger");
       // replace:true so that user cannot go "back" to the VerifyOTP page w/out an email
       navigate("/verify", { replace: true });
     }
-  }, [email, navigate]);
+  }, [email, navigate, hasAuthenticatedSession]);
 
   return (
     <div className="container min-vh-100 d-flex align-items-center justify-content-center">
