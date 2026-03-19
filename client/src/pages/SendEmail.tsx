@@ -22,10 +22,7 @@ const SendEmail = () => {
 
   useSessionGuard();
   const { showToast } = useToast();
-  const [appPassword, setAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -68,13 +65,9 @@ const SendEmail = () => {
       return;
     }
 
-    if (!appPassword) {
-      showToast("Please enter your Google App Password.", "danger");
-      return;
-    }
     try {
       setLoading(true);
-      await sendTestEmail(fromEmail, appPassword, toEmail);
+      await sendTestEmail(toEmail);
       showToast("Test email sent successfully!", "success");
     } catch (err: any) {
       showToast(err.message, "danger");
@@ -128,11 +121,6 @@ const SendEmail = () => {
 
     if (!fromEmail) {
       showToast("Session expired. Please verify OTP again.", "danger");
-      return;
-    }
-
-    if (!appPassword) {
-      showToast("Please enter your Google App Password.", "danger");
       return;
     }
 
@@ -221,7 +209,6 @@ const SendEmail = () => {
 
       const result = await sendBulkEmail({
         fromEmail,
-        appPassword,
         headers,
         data,
         recipientField,
@@ -274,40 +261,8 @@ const SendEmail = () => {
               </small>
             </div>
 
-            {/* APP PASSWORD */}
-            <div className="col-lg-3 position-relative">
-              <div className="form-floating">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="form-control"
-                  id="appPassword"
-                  placeholder="Enter Google App Password"
-                  value={appPassword}
-                  onChange={(e) => setAppPassword(e.target.value)}
-                />
-                <label htmlFor="appPassword">App Password</label>
-              </div>
-              <small className="text-muted">
-                Asked every time for security
-              </small>
-
-              {/* Eye toggle */}
-              <i
-                className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"} position-absolute`}
-                style={{
-                  top: "35%",
-                  right: "1.2rem",
-                  transform: "translateY(-50%)",
-                  cursor: "pointer",
-                  fontSize: "1.1rem",
-                }}
-                onClick={() => setShowPassword(!showPassword)}
-              />
-            </div>
-
-
             {/* TEMPLATE LINK */}
-            <div className="col-lg-2">
+            <div className="col-lg-3">
               <div className="form-floating">
                 <a
                   href="https://docs.google.com/spreadsheets/d/1SD60K1x3Sw9EUY2LuFVxzT4PNtAsXM2FHh76batpZrk/edit?gid=0#gid=0"
@@ -323,7 +278,7 @@ const SendEmail = () => {
 
 
             {/* IMPORT */}
-            <div className="col-lg-3">
+            <div className="col-lg-5">
               <input
                 type="file"
                 className="form-control"

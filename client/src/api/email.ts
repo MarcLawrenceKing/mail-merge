@@ -4,8 +4,6 @@ const getToken = () => sessionStorage.getItem("otp_token");
 
 // this frontend helper fetches the /api/email/test-send route from express server
 export const sendTestEmail = async (
-  fromEmail: string,
-  appPassword: string,
   toEmail: string
 ) => {
   const token = getToken();
@@ -20,8 +18,6 @@ export const sendTestEmail = async (
     method: "POST",
     headers,
     body: JSON.stringify({
-      fromEmail,
-      appPassword,
       toEmail,
     }),
   });

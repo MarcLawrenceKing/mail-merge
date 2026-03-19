@@ -5,7 +5,10 @@ import multer from "multer";
 import fs from "fs";
 import { parseCSV, parseXLSX } from "../services/fileParsingService";
 import { validateRecipients } from "../utils/validateRecipients";
-import { requireOtpAndOAuthVerified } from "../services/guardMiddleware";
+import {
+  requireOtpAndOAuthVerified,
+  type AuthenticatedRequest,
+} from "../services/guardMiddleware";
 
 const router = Router();
 router.use(requireOtpAndOAuthVerified);
@@ -13,23 +16,26 @@ router.use(requireOtpAndOAuthVerified);
 // this route "/api/email/test-send" test sends takes from & to emails, and app password to mail the user's self using nodemailer
 router.post("/test-send", async (req: Request, res: Response) => {
   try {
-    const { fromEmail, appPassword, toEmail } = req.body;
+    const auth = (req as AuthenticatedRequest).auth;
+    const { toEmail } = req.body;
+    const fromEmail = auth?.email;
+    const googleAccessToken = auth?.googleAccessToken;
 
-    if (!fromEmail || !appPassword || !toEmail) {
+    if (!fromEmail || !googleAccessToken || !toEmail) {
       return res.status(400).json({
         message: "Missing required fields",
       });
     }
 
-    await sendTestEmail(fromEmail, appPassword, toEmail);
+    await sendTestEmail(fromEmail, googleAccessToken, toEmail);
 
     return res.json({
       message: "Test email sent successfully",
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
     return res.status(500).json({
-      message: "Failed to send test email",
+      message: err?.message || "Failed to send test email",
     });
   }
 });
@@ -153,8 +159,6 @@ router.post("/import-file", upload.single("file"), async (req, res) => {
 // lamda safe approach
 router.post("/send-mail", async (req: Request, res: Response) => {
   const {
-    fromEmail,
-    appPassword,
     headers,
     data,
     recipientField,
@@ -162,6 +166,15 @@ router.post("/send-mail", async (req: Request, res: Response) => {
     body,
     attachment,
   } = req.body;
+  const auth = (req as AuthenticatedRequest).auth;
+  const fromEmail = auth?.email;
+  const googleAccessToken = auth?.googleAccessToken;
+
+  if (!fromEmail || !googleAccessToken) {
+    return res.status(401).json({
+      message: "OAuth session expired. Please re-verify with Google OAuth.",
+    });
+  }
 
   if (!headers.includes(recipientField)) {
     return res.status(400).json({
@@ -200,7 +213,7 @@ router.post("/send-mail", async (req: Request, res: Response) => {
   try {
     await sendBulkEmails({
       fromEmail,
-      appPassword,
+      googleAccessToken,
       rows: validRows, // 👈 only valid rows
       recipientField,
       subject,

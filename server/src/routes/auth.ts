@@ -136,9 +136,12 @@ router.get("/google/auth-url", requireOtpVerified, async (req, res) => {
   authUrl.searchParams.set("client_id", clientId);
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("response_type", "code");
-  authUrl.searchParams.set("scope", "openid email profile");
+  authUrl.searchParams.set(
+    "scope",
+    "openid email profile https://mail.google.com/"
+  );
   authUrl.searchParams.set("state", state);
-  authUrl.searchParams.set("prompt", "select_account");
+  authUrl.searchParams.set("prompt", "consent select_account");
   authUrl.searchParams.set("login_hint", auth.email);
 
   return res.json({ authUrl: authUrl.toString() });
@@ -236,11 +239,12 @@ router.get("/google/callback", async (req, res) => {
 
     const tokenData = (await tokenRes.json()) as {
       id_token?: string;
+      access_token?: string;
       error?: string;
       error_description?: string;
     };
 
-    if (!tokenRes.ok || !tokenData.id_token) {
+    if (!tokenRes.ok || !tokenData.id_token || !tokenData.access_token) {
       return redirectBack(callbackClientUrl, {
         error: "token_exchange_failed",
         message:
@@ -290,6 +294,7 @@ router.get("/google/callback", async (req, res) => {
         email: statePayload.email,
         otpVerified: true,
         oauthVerified: true,
+        googleAccessToken: tokenData.access_token,
       },
       jwtSecret,
       { expiresIn: "1h" }

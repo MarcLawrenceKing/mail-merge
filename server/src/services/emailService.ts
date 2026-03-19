@@ -48,27 +48,40 @@ export const sendOtpEmail = async (email: string, otp: string) => {
   return data;
 };
 
-// this function sends a test email using the from&to email, and app password
-// uses nodemailer to send using the user's own gmail account
+// this function sends a test email using Gmail OAuth access token
 export const sendTestEmail = async (
   fromEmail: string,
-  appPassword: string,
+  googleAccessToken: string,
   toEmail: string
 ) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
+      type: "OAuth2",
       user: fromEmail,
-      pass: appPassword,
+      accessToken: googleAccessToken,
     },
   });
 
-  await transporter.sendMail({
-    from: `"Test Mailer" <${fromEmail}>`,
-    to: toEmail,
-    subject: "Test Email Successful ✅",
-    text: "This is a test email sent using your Google App Password.",
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Test Mailer" <${fromEmail}>`,
+      to: toEmail,
+      subject: "Test Email Successful ✅",
+      text: "This is a test email sent using Google OAuth.",
+    });
+  } catch (err: any) {
+    const raw = typeof err?.message === "string" ? err.message : "";
+    if (
+      raw.includes("Invalid login") ||
+      raw.includes("Username and Password not accepted")
+    ) {
+      throw new Error(
+        "Google OAuth token is not valid for Gmail SMTP. Please reconnect Google OAuth and grant mail permission."
+      );
+    }
+    throw err;
+  }
 };
 
 type Base64Attachment = {
@@ -79,7 +92,7 @@ type Base64Attachment = {
 
 type SendBulkEmailParams = {
   fromEmail: string;
-  appPassword: string;
+  googleAccessToken: string;
   rows: Record<string, string>[];
   recipientField: string;
   subject: string;
@@ -94,7 +107,7 @@ type SendBulkEmailParams = {
 // function to actually send a gmail to the recipients
 export const sendBulkEmails = async ({
   fromEmail,
-  appPassword,
+  googleAccessToken,
   rows,
   recipientField,
   subject,
@@ -105,8 +118,9 @@ export const sendBulkEmails = async ({
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
+      type: "OAuth2",
       user: fromEmail,
-      pass: appPassword,
+      accessToken: googleAccessToken,
     },
   });
 
