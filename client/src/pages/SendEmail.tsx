@@ -45,6 +45,13 @@ const SendEmail = () => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
+  const hasUploadedContacts = headers.length > 0 || data.length > 0;
+  const canSendEmails =
+    hasUploadedContacts &&
+    recipientField.trim().length > 0 &&
+    subject.trim().length > 0 &&
+    body.trim().length > 0 &&
+    !loading;
 
   // for SSE of sending progress
   // const [sent, setSent] = useState<number>(0);
@@ -295,7 +302,7 @@ const SendEmail = () => {
                 disabled={loading}
               />
               <small className="text-muted">
-                Import your CSV/Excel file
+                Import your "contacts list" in CSV/Excel file format
               </small>
             </div>
 
@@ -313,6 +320,7 @@ const SendEmail = () => {
                 className="btn btn-primary mb-2"
                 data-bs-toggle="modal"
                 data-bs-target="#sendConfirmModal"
+                disabled={!canSendEmails}
               >
                 Send Emails
               </button>
@@ -323,12 +331,18 @@ const SendEmail = () => {
       </div>
 
       {/* ================= SECTION 2: MAIN ================= */}
-      <div className="card shadow-sm mb-4">
+      <div
+        className={`card shadow-sm mb-4 ${!hasUploadedContacts ? "opacity-50" : ""}`}
+        aria-disabled={!hasUploadedContacts}
+      >
         <div className="card-header fw-bold bg-body-secondary">
           Email Template
         </div>
 
-        <div className="card-body">
+        <div
+          className="card-body"
+          style={!hasUploadedContacts ? { pointerEvents: "none" } : undefined}
+        >
           <div className="mb-3">
             <label className="form-label fw-semibold">
               Recipients
@@ -337,6 +351,7 @@ const SendEmail = () => {
               type="text"
               className="form-control"
               placeholder="example: {{email}}"
+              disabled={!hasUploadedContacts}
               onChange={(e) =>
                 setRecipientField(
                   e.target.value.replace(/[{}]/g, "").trim()
@@ -357,6 +372,7 @@ const SendEmail = () => {
               className="form-control"
               placeholder="example: OJT APPLICATION"
               value={subject}
+              disabled={!hasUploadedContacts}
               onChange={(e) => setSubject(e.target.value)}
             />
           </div>
@@ -368,6 +384,7 @@ const SendEmail = () => {
               className="form-control"
               rows={8}
               value={body}
+              disabled={!hasUploadedContacts}
               onChange={(e) => setBody(e.target.value)}
               placeholder="example: Good day Mx. {{name}},
 
@@ -382,6 +399,7 @@ I would like to ask if there are currently any internship opportunities availabl
             <input
               type="file"
               className="form-control"
+              disabled={!hasUploadedContacts}
               onChange={(e) =>
                 setAttachment(e.target.files?.[0] || null)
               }
@@ -400,7 +418,11 @@ I would like to ask if there are currently any internship opportunities availabl
       </div>
 
       {/* ================= SECTION 3: RECIPIENTS ================= */}
-      <div className="card shadow-sm">
+      <div
+        className={`card shadow-sm ${!hasUploadedContacts ? "opacity-50" : ""}`}
+        aria-disabled={!hasUploadedContacts}
+        style={!hasUploadedContacts ? { pointerEvents: "none" } : undefined}
+      >
         <div className="card-header fw-bold bg-body-secondary">
           Recipients
         </div>
