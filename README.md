@@ -131,7 +131,9 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=
 CLIENT_URL=
+ALLOWED_ORIGINS=
 ```
+`ALLOWED_ORIGINS` accepts a comma-separated list and supports `*` wildcards (example: `https://mail-merge-*.vercel.app`).
 
 `client/.env`
 ```env

@@ -6,6 +6,11 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
+    "build:lambda": "esbuild src/lambda_handler.ts --bundle --platform=node --target=node18 --outfile=dist/index.js",
+    "package:lambda": "npm run build:lambda && zip -j function.zip dist/index.js",
+    "deploy:lambda": "bash -lc 'set -a; [ -f .env ] && source .env; set +a; npm run package:lambda && AWS_PAGER=\"\" aws lambda update-function-code --no-cli-pager --function-name \"${LAMBDA_FUNCTION_NAME:?LAMBDA_FUNCTION_NAME is required}\" --zip-file fileb://function.zip'",
+    "deploy:apigw": "bash -lc 'set -a; [ -f .env ] && source .env; set +a; API_ID=\"${APIGW_API_ID:?APIGW_API_ID is required}\"; STAGE=\"${APIGW_STAGE:-\\$default}\"; if [ \"$(AWS_PAGER=\"\" aws apigatewayv2 get-stage --no-cli-pager --api-id \"$API_ID\" --stage-name \"$STAGE\" --query AutoDeploy --output text)\" = \"True\" ]; then echo \"API Gateway stage $STAGE has AutoDeploy enabled; skipping create-deployment.\"; else AWS_PAGER=\"\" aws apigatewayv2 create-deployment --no-cli-pager --api-id \"$API_ID\" --stage-name \"$STAGE\"; fi'",
+    "deploy:aws": "npm run deploy:lambda && npm run deploy:apigw",
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.js"

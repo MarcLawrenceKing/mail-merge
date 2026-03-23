@@ -3,15 +3,37 @@ import routes from "./routes";
 
 const app = express();
 
-const allowedOrigins = new Set([
+const parseCsvEnv = (value: string | undefined): string[] =>
+  (value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+const configuredOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  process.env.CLIENT_URL || "",
-]);
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+  ...parseCsvEnv(process.env.ALLOWED_ORIGINS),
+];
+
+const wildcardToRegex = (pattern: string): RegExp => {
+  const escaped = pattern
+    .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*/g, ".*");
+  return new RegExp(`^${escaped}$`);
+};
+
+const exactOrigins = new Set(configuredOrigins.filter((origin) => !origin.includes("*")));
+const wildcardOrigins = configuredOrigins
+  .filter((origin) => origin.includes("*"))
+  .map(wildcardToRegex);
+
+const isOriginAllowed = (origin: string): boolean =>
+  exactOrigins.has(origin) || wildcardOrigins.some((pattern) => pattern.test(origin));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin && allowedOrigins.has(origin)) {
+  if (origin && isOriginAllowed(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Vary", "Origin");
   }
