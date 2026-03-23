@@ -127,11 +127,17 @@ RESEND_FROM_EMAIL=your_verified_sender@yourdomain.com
 PORT=3005
 JWT_SECRET=secret_to_encrypt_session_token
 
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=
-CLIENT_URL=
-ALLOWED_ORIGINS=
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
+CLIENT_URL=http://localhost:5173
+
+# AWS Lambda & API Gateway Deployment
+LAMBDA_FUNCTION_NAME=your_lambda_function_name
+APIGW_API_ID=your_api_gateway_id
+APIGW_STAGE=your_api_gateway_stage
+
+ALLOWED_ORIGINS=http://localhost:5173
 ```
 `ALLOWED_ORIGINS` accepts a comma-separated list and supports `*` wildcards (example: `https://mail-merge-*.vercel.app`).
 
