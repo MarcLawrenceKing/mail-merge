@@ -1,4 +1,4 @@
-CREATE TABLE "tbl_user" (
+CREATE TABLE IF NOT EXISTS "tbl_user" (
 	"user_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" text NOT NULL,
 	"otp_hash" text,
