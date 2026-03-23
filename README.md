@@ -52,7 +52,7 @@ This project was built mainly to help students applying for OJT / internships st
 
 - Users must have access to the sender email to complete OTP verification 
 
-### Google App Password
+### Google OAuth
 
 - Required to allow the app to send emails using the user's account
 
@@ -92,7 +92,7 @@ This project was built mainly to help students applying for OJT / internships st
 - npm (v9+)
 - Docker + Docker Compose (optional, for containerized local setup)
 - Supabase account
-- Google account (for App Password)
+- Google account (for OAuth)
 - Resend account
 
 ### 1. Clone the repository
@@ -126,6 +126,11 @@ RESEND_FROM_EMAIL=your_verified_sender@yourdomain.com
 
 PORT=3005
 JWT_SECRET=secret_to_encrypt_session_token
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+CLIENT_URL=
 ```
 
 `client/.env`
