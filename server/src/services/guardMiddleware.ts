@@ -6,6 +6,7 @@ export interface SessionJwtPayload {
   otpVerified: boolean;
   oauthVerified: boolean;
   googleAccessToken?: string;
+  googleRefreshToken?: string;
   iat: number;
   exp: number;
 }

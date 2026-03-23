@@ -217,7 +217,15 @@ const SendEmail = () => {
         attachment: attachmentPayload,
       });
 
-      showToast("Emails sent successfully!", "success");
+      const sentCount = result?.summary?.sent ?? 0;
+      const failedCount = result?.summary?.failed ?? 0;
+      if (sentCount === 0 && failedCount > 0) {
+        showToast("No emails were sent. Please reconnect Google OAuth and try again.", "danger");
+      } else if (failedCount > 0) {
+        showToast(`Sent ${sentCount} email(s), failed ${failedCount}.`, "warning");
+      } else {
+        showToast("Emails sent successfully!", "success");
+      }
 
       navigate("/send-email/summary", {
         state: {

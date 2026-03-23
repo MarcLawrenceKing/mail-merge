@@ -140,6 +140,8 @@ router.get("/google/auth-url", requireOtpVerified, async (req, res) => {
     "scope",
     "openid email profile https://mail.google.com/"
   );
+  authUrl.searchParams.set("access_type", "offline");
+  authUrl.searchParams.set("include_granted_scopes", "true");
   authUrl.searchParams.set("state", state);
   authUrl.searchParams.set("prompt", "consent select_account");
   authUrl.searchParams.set("login_hint", auth.email);
@@ -240,6 +242,7 @@ router.get("/google/callback", async (req, res) => {
     const tokenData = (await tokenRes.json()) as {
       id_token?: string;
       access_token?: string;
+      refresh_token?: string;
       error?: string;
       error_description?: string;
     };
@@ -295,6 +298,7 @@ router.get("/google/callback", async (req, res) => {
         otpVerified: true,
         oauthVerified: true,
         googleAccessToken: tokenData.access_token,
+        googleRefreshToken: tokenData.refresh_token,
       },
       jwtSecret,
       { expiresIn: "1h" }

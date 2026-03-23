@@ -20,6 +20,7 @@ router.post("/test-send", async (req: Request, res: Response) => {
     const { toEmail } = req.body;
     const fromEmail = auth?.email;
     const googleAccessToken = auth?.googleAccessToken;
+    const googleRefreshToken = auth?.googleRefreshToken;
 
     if (!fromEmail || !googleAccessToken || !toEmail) {
       return res.status(400).json({
@@ -27,7 +28,7 @@ router.post("/test-send", async (req: Request, res: Response) => {
       });
     }
 
-    await sendTestEmail(fromEmail, googleAccessToken, toEmail);
+    await sendTestEmail(fromEmail, googleAccessToken, toEmail, googleRefreshToken);
 
     return res.json({
       message: "Test email sent successfully",
@@ -169,6 +170,7 @@ router.post("/send-mail", async (req: Request, res: Response) => {
   const auth = (req as AuthenticatedRequest).auth;
   const fromEmail = auth?.email;
   const googleAccessToken = auth?.googleAccessToken;
+  const googleRefreshToken = auth?.googleRefreshToken;
 
   if (!fromEmail || !googleAccessToken) {
     return res.status(401).json({
@@ -214,16 +216,18 @@ router.post("/send-mail", async (req: Request, res: Response) => {
     await sendBulkEmails({
       fromEmail,
       googleAccessToken,
+      googleRefreshToken,
       rows: validRows, // 👈 only valid rows
       recipientField,
       subject,
       body,
       attachment,
 
-      onProgress: ({ email, result }) => {
+      onProgress: ({ email, result, reason }) => {
         results.push({
           email,
           sent: result === "sent" ? "SUCCESS" : "FAILED",
+          reason,
         });
       },
     });
@@ -234,7 +238,10 @@ router.post("/send-mail", async (req: Request, res: Response) => {
     const total = results.length;
 
     return res.json({
-      message: "Email sending completed",
+      message:
+        failed > 0
+          ? "Email sending completed with some failures"
+          : "Email sending completed",
       summary: {
         total,
         sent,
@@ -248,7 +255,7 @@ router.post("/send-mail", async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({
-      message: "Failed to send emails",
+      message: err instanceof Error ? err.message : "Failed to send emails",
     });
   }
 });

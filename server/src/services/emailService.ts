@@ -1,11 +1,7 @@
 // function to send email
 
-import { SendEmailCommand } from "@aws-sdk/client-ses";
-import { sesClient } from "../config/aws-ses";
-
 import nodemailer from "nodemailer";
 import { replacePlaceholders } from "../utils/replacePlaceholders";
-import { delay } from "../utils/delay3Seconds";
 import { resend } from "../config/resend";
 
 
@@ -52,18 +48,17 @@ export const sendOtpEmail = async (email: string, otp: string) => {
 export const sendTestEmail = async (
   fromEmail: string,
   googleAccessToken: string,
-  toEmail: string
+  toEmail: string,
+  googleRefreshToken?: string
 ) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: fromEmail,
-      accessToken: googleAccessToken,
-    },
+  const transporter = createGmailTransporter({
+    fromEmail,
+    googleAccessToken,
+    googleRefreshToken,
   });
 
   try {
+    await transporter.verify();
     await transporter.sendMail({
       from: `"Test Mailer" <${fromEmail}>`,
       to: toEmail,
@@ -93,6 +88,7 @@ type Base64Attachment = {
 type SendBulkEmailParams = {
   fromEmail: string;
   googleAccessToken: string;
+  googleRefreshToken?: string;
   rows: Record<string, string>[];
   recipientField: string;
   subject: string;
@@ -101,13 +97,62 @@ type SendBulkEmailParams = {
   onProgress?: (payload: {
     email: string;
     result: "sent" | "failed";
+    reason?: string;
   }) => void;
+};
+
+const normalizeSendError = (err: unknown) => {
+  const raw = typeof (err as any)?.message === "string" ? (err as any).message : "";
+  if (
+    raw.includes("Invalid login") ||
+    raw.includes("Username and Password not accepted")
+  ) {
+    return "Google OAuth token is not valid for Gmail SMTP. Please reconnect Google OAuth and grant mail permission.";
+  }
+  if (raw.includes("Invalid credentials")) {
+    return "Google OAuth credentials are invalid. Please reconnect Google OAuth.";
+  }
+  if (raw.includes("Daily user sending quota exceeded")) {
+    return "Gmail sending quota exceeded for this account.";
+  }
+  return raw || "Unknown email send error";
+};
+
+const createGmailTransporter = ({
+  fromEmail,
+  googleAccessToken,
+  googleRefreshToken,
+}: {
+  fromEmail: string;
+  googleAccessToken: string;
+  googleRefreshToken?: string;
+}) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+  const auth: Record<string, string> = {
+    type: "OAuth2",
+    user: fromEmail,
+    accessToken: googleAccessToken,
+  };
+
+  if (googleRefreshToken && clientId && clientSecret) {
+    auth.clientId = clientId;
+    auth.clientSecret = clientSecret;
+    auth.refreshToken = googleRefreshToken;
+  }
+
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth,
+  });
 };
 
 // function to actually send a gmail to the recipients
 export const sendBulkEmails = async ({
   fromEmail,
   googleAccessToken,
+  googleRefreshToken,
   rows,
   recipientField,
   subject,
@@ -115,14 +160,13 @@ export const sendBulkEmails = async ({
   attachment,
   onProgress
 }: SendBulkEmailParams) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: fromEmail,
-      accessToken: googleAccessToken,
-    },
+  const transporter = createGmailTransporter({
+    fromEmail,
+    googleAccessToken,
+    googleRefreshToken,
   });
+
+  await transporter.verify();
 
   for (const row of rows) {
 
@@ -155,8 +199,12 @@ export const sendBulkEmails = async ({
       // Important: “sent” ≠ “delivered”
       // This code determines SMTP success, not actual delivery.
       onProgress?.({ email: to, result: "sent" });
-    } catch {
-      onProgress?.({ email: to, result: "failed" });
+    } catch (err) {
+      onProgress?.({
+        email: to,
+        result: "failed",
+        reason: normalizeSendError(err),
+      });
     }
     //await delay(3000); // wait 3 seconds before sending
   }
