@@ -197,6 +197,20 @@ router.post("/send-mail", async (req: Request, res: Response) => {
     });
   }
 
+  if (attachment != null) {
+    if (
+      typeof attachment !== "object" ||
+      typeof attachment.name !== "string" ||
+      typeof attachment.type !== "string" ||
+      typeof attachment.contentBase64 !== "string"
+    ) {
+      return res.status(400).json({
+        message: "Invalid attachment payload",
+      });
+    }
+
+  }
+
   const results: {
     email: string;
     sent: "SUCCESS" | "FAILED";

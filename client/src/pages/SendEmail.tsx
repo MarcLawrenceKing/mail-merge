@@ -246,6 +246,16 @@ const SendEmail = () => {
     }
   };
 
+  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setAttachment(null);
+      return;
+    }
+
+    setAttachment(file);
+  };
+
   return (
     <div className="container py-5">
 
@@ -345,7 +355,7 @@ const SendEmail = () => {
         >
           <div className="mb-3">
             <label className="form-label fw-semibold">
-              Recipients
+              Recipients <small className="fw-normal ">(use {"{{column_header}}"} from CSV/Excel)</small>
             </label>
             <input
               type="text"
@@ -378,7 +388,7 @@ const SendEmail = () => {
           </div>
           <div className="mb-3">
             <label className="form-label fw-semibold">
-              Email Body
+              Email Body <small className="fw-normal ">(use {"{{column_header}}"} for dynamic values)</small>
             </label>
             <textarea
               className="form-control"
@@ -400,9 +410,7 @@ I would like to ask if there are currently any internship opportunities availabl
               type="file"
               className="form-control"
               disabled={!hasUploadedContacts}
-              onChange={(e) =>
-                setAttachment(e.target.files?.[0] || null)
-              }
+              onChange={handleAttachmentChange}
             />
             <small className="text-muted">
               Optional file attachment (same file sent to all recipients)

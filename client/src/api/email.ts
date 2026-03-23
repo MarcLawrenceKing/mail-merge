@@ -130,10 +130,29 @@ export const sendBulkEmail = async (payload: any) => {
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json();
+  const contentType = res.headers.get("content-type") || "";
+  let data: any = null;
+
+  if (contentType.includes("application/json")) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    data = { message: text };
+  }
 
   if (!res.ok) {
-    throw new Error(data.message || "Failed to send emails");
+    const rawMessage =
+      typeof data?.message === "string" ? data.message : "";
+    const normalizedMessage = rawMessage.toLowerCase();
+
+    if (
+      res.status === 413 ||
+      normalizedMessage.includes("payload too large")
+    ) {
+      throw new Error("Attachment is too large.");
+    }
+
+    throw new Error(rawMessage || "Failed to send emails");
   }
 
   return data;
