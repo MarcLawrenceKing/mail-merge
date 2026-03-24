@@ -11,6 +11,7 @@ import {
 } from "../services/guardMiddleware";
 
 const router = Router();
+const MAX_ATTACHMENT_SIZE_BYTES = 500 * 1024;
 router.use(requireOtpAndOAuthVerified);
 
 // this route "/api/email/test-send" test sends takes from & to emails, and app password to mail the user's self using nodemailer
@@ -206,6 +207,25 @@ router.post("/send-mail", async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({
         message: "Invalid attachment payload",
+      });
+    }
+
+    const normalizedBase64 = attachment.contentBase64.replace(/\s/g, "");
+    const isValidBase64 =
+      normalizedBase64.length > 0 &&
+      normalizedBase64.length % 4 === 0 &&
+      /^[A-Za-z0-9+/]*={0,2}$/.test(normalizedBase64);
+
+    if (!isValidBase64) {
+      return res.status(400).json({
+        message: "Invalid attachment payload",
+      });
+    }
+
+    const attachmentSizeBytes = Buffer.byteLength(normalizedBase64, "base64");
+    if (attachmentSizeBytes > MAX_ATTACHMENT_SIZE_BYTES) {
+      return res.status(413).json({
+        message: "Attachment must be 500KB or smaller.",
       });
     }
 

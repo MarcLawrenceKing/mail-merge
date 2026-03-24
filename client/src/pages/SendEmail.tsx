@@ -18,6 +18,8 @@ type Column<T> = {
   label: string;
 };
 
+const MAX_ATTACHMENT_SIZE_BYTES = 500 * 1024;
+
 const SendEmail = () => {
 
   useSessionGuard();
@@ -152,6 +154,11 @@ const SendEmail = () => {
 
     let attachmentPayload;
       if (attachment) {
+        if (attachment.size > MAX_ATTACHMENT_SIZE_BYTES) {
+          showToast("Attachment must be 500KB or smaller.", "danger");
+          return;
+        }
+
         attachmentPayload = {
           name: attachment.name,
           type: attachment.type,
@@ -250,6 +257,13 @@ const SendEmail = () => {
     const file = e.target.files?.[0];
     if (!file) {
       setAttachment(null);
+      return;
+    }
+
+    if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+      setAttachment(null);
+      e.target.value = "";
+      showToast("Attachment must be 500KB or smaller.", "danger");
       return;
     }
 
@@ -413,7 +427,7 @@ I would like to ask if there are currently any internship opportunities availabl
               onChange={handleAttachmentChange}
             />
             <small className="text-muted">
-              Optional file attachment (same file sent to all recipients)
+              Optional file attachment, max 500KB (same file sent to all recipients)
             </small>
           </div>
           {headers.length > 0 && (
