@@ -43,14 +43,16 @@ const SendEmail = () => {
   const [headers, setHeaders] = useState<string[]>([]);
 
   // email template fields
-  const [recipientField, setRecipientField] = useState("");
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [recipientField, setRecipientField] = useState("{{email}}");
+  const [subject, setSubject] = useState("OJT APPLICATION");
+  const [body, setBody] = useState(
+    "Good day Mx. {{name}},\n\nI would like to ask if there are currently any internship opportunities available, as {{company}} is listed as a company with a MOA with our school..."
+  );
   const [attachment, setAttachment] = useState<File | null>(null);
   const hasUploadedContacts = headers.length > 0 || data.length > 0;
   const canSendEmails =
     hasUploadedContacts &&
-    recipientField.trim().length > 0 &&
+    recipientField.replace(/[{}]/g, "").trim().length > 0 &&
     subject.trim().length > 0 &&
     body.trim().length > 0 &&
     !loading;
@@ -133,13 +135,24 @@ const SendEmail = () => {
       return;
     }
 
-    if (!recipientField) {
+    const normalizedRecipientField = recipientField
+      .replace(/[{}]/g, "")
+      .trim();
+
+    if (!normalizedRecipientField) {
       showToast("Recipient field is required.", "danger");
       return;
     }
 
+    const matchedRecipientHeader =
+      headers.find((header) => header === normalizedRecipientField) ||
+      headers.find(
+        (header) =>
+          header.toLowerCase() === normalizedRecipientField.toLowerCase()
+      );
+
     // ✅ frontend validation (matches backend rule)
-    if (!headers.includes(recipientField)) {
+    if (!matchedRecipientHeader) {
       showToast(
         `Recipient field "${recipientField}" does not exist in headers`,
         "danger"
@@ -225,7 +238,7 @@ const SendEmail = () => {
         fromEmail,
         headers,
         data,
-        recipientField,
+        recipientField: matchedRecipientHeader,
         subject,
         body,
         attachment: attachmentPayload,
@@ -375,12 +388,9 @@ const SendEmail = () => {
               type="text"
               className="form-control"
               placeholder="example: {{email}}"
+              value={recipientField}
               disabled={!hasUploadedContacts}
-              onChange={(e) =>
-                setRecipientField(
-                  e.target.value.replace(/[{}]/g, "").trim()
-                )
-              }
+              onChange={(e) => setRecipientField(e.target.value)}
             />
             <small className="text-muted">
               You can use any column name from your CSV/xlsx file
